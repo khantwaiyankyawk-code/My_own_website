@@ -676,8 +676,31 @@
     </div>
   </footer>
 
-  <!-- Application Logic with Persistence and Delete Listing Feature -->
-  <script>
+  <!-- Firebase Cloud Integration Script (အခြားသူများပါ တပြိုင်နက် သုံးနိုင်စေရန် ပြင်ဆင်ပြီး) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      deleteDoc, 
+      doc, 
+      onSnapshot, 
+      query, 
+      orderBy,
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // ကိုခန့်၏ တကယ့် Firebase Project Keys များ
+    const firebaseConfig = {
+      apiKey: "AIzaSyCyR7uTtlrpTMsDUS_59uVu3UbyvMybfTY",
+      authDomain: "my-own-website-bb4e9.firebaseapp.com",
+      projectId: "my-own-website-bb4e9",
+      storageBucket: "my-own-website-bb4e9.firebasestorage.app",
+      messagingSenderId: "35886139510",
+      appId: "1:35886139510:web:9a1c78e894f7f6e98a3757"
+    };
+
     const PRISMA_SCHEMA_CODE = `// prisma/schema.prisma
 
 datasource db {
@@ -726,6 +749,11 @@ model Listing {
   seller         User               @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   createdAt      DateTime           @default(now())
 };`;
+
+    // Firebase Initialize
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const listingsCol = collection(db, "listings");
 
     const CATEGORIES_DATA = {
       SOFTWARE: [
@@ -786,153 +814,13 @@ model Listing {
       }
     ];
 
-    const INITIAL_LISTINGS = [
-      {
-        id: 'list_1',
-        title: 'All-in-One Computer Science Cheat Sheet Bundle',
-        description: 'Concise high-yield revision sheets for Git, Python 3.12, SQL syntax, and Modern C++. Perfect for exam preps and technical interviews.',
-        priceMMK: 5000,
-        type: 'SOFTWARE',
-        category: 'Curated Study Packs',
-        subCategory: 'Cheat Sheets',
-        previewUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80',
-        isFeatured: true,
-        plan: 'PREMIUM',
-        digitalType: 'STUDY_PACK',
-        fileFormat: 'PDF + Notion Document',
-        sellerId: 'usr_2',
-        createdAt: '2 hours ago',
-        contactTelegram: 'may_tech',
-        contactViber: '+959798765432',
-        contactPhone: '09798765432'
-      },
-      {
-        id: 'list_2',
-        title: 'Minimalist Notion Academic & Goal Workspace 2026',
-        description: 'Fully automated student dashboard with GPA calculator, exam calendar, assignment tracker, and spaced repetition flashcard database.',
-        priceMMK: 10000,
-        type: 'SOFTWARE',
-        category: 'Digital Templates & Tools',
-        subCategory: 'Notion Dashboards',
-        previewUrl: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=800&q=80',
-        isFeatured: false,
-        plan: 'FREEMIUM',
-        digitalType: 'NOTION_TEMPLATE',
-        fileFormat: 'Instant Notion Duplicate Link',
-        sellerId: 'usr_2',
-        createdAt: '5 hours ago',
-        contactTelegram: 'may_tech',
-        contactViber: '+959798765432',
-        contactPhone: '09798765432'
-      },
-      {
-        id: 'list_3',
-        title: 'Fullstack Next.js 15 + Tailwind CSS + Prisma Boilerplate',
-        description: 'Production-ready starter repository configured with Auth, responsive dashboard layouts, dark mode, Stripe/KPay mockup hooks, and Docker Compose.',
-        priceMMK: 15000,
-        type: 'SOFTWARE',
-        category: 'Code Snippets & Starter Projects',
-        subCategory: 'Boilerplates & Starter Kits',
-        previewUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
-        isFeatured: true,
-        plan: 'PREMIUM',
-        digitalType: 'CODE_BOILERPLATE',
-        fileFormat: 'Private GitHub Repo Invite + Zip',
-        sellerId: 'usr_1',
-        createdAt: 'Yesterday',
-        contactTelegram: 'aung_dev',
-        contactViber: '+959976543210',
-        contactPhone: '09976543210'
-      },
-      {
-        id: 'list_4',
-        title: 'MacBook Air M1 (8GB Unified / 256GB SSD, Space Gray)',
-        description: 'Personal device used gently for coding. Battery health at 88% (Cycle count: 210). Comes with original 30W USB-C brick, braided cable, and box. In-person testing welcomed.',
-        priceMMK: 1450000,
-        type: 'HARDWARE',
-        category: 'Laptops & Ultrabooks',
-        subCategory: 'Apple Silicon',
-        previewUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
-        isFeatured: true,
-        plan: 'PREMIUM',
-        condition: 'EXCELLENT_90_PLUS',
-        batteryHealth: 88,
-        meetupLocation: 'Hledan Center or MICT Park, Yangon',
-        sellerId: 'usr_1',
-        createdAt: '1 day ago',
-        contactTelegram: 'aung_dev',
-        contactViber: '+959976543210',
-        contactPhone: '09976543210'
-      },
-      {
-        id: 'list_5',
-        title: 'Redmi K-series 5G Flagship (Used 6 Months, Mint)',
-        description: 'Snapdragon chipset, 120Hz AMOLED display, 67W charging brick included. Tempered glass applied from day 1 with zero scratches. Testing available around Sanchaung.',
-        priceMMK: 650000,
-        type: 'HARDWARE',
-        category: 'Smartphones & Tablets',
-        subCategory: 'Android Devices',
-        previewUrl: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80',
-        isFeatured: false,
-        plan: 'FREEMIUM',
-        condition: 'LIKE_NEW',
-        batteryHealth: 94,
-        meetupLocation: 'Dagon Centre 2 / Sanchaung, Yangon',
-        sellerId: 'usr_3',
-        createdAt: '2 days ago',
-        contactTelegram: 'minkhant_cs',
-        contactViber: '+959450011223',
-        contactPhone: '09450011223'
-      },
-      {
-        id: 'list_6',
-        title: 'Anker 65W GaN Fast Charger + 100W Braided Type-C Cable',
-        description: 'Dual USB-C and single USB-A compact wall charger. Supports PD 3.0 PPS fast charging for MacBooks, iPads, and Android phones. Purchased 2 months ago.',
-        priceMMK: 65000,
-        type: 'HARDWARE',
-        category: 'Chargers, Cables & Power Adapters',
-        subCategory: 'GaN Fast Chargers',
-        previewUrl: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80',
-        isFeatured: false,
-        plan: 'FREEMIUM',
-        condition: 'LIKE_NEW',
-        meetupLocation: 'MICT Park Main Entrance, Yangon',
-        sellerId: 'usr_3',
-        createdAt: '3 days ago',
-        contactTelegram: 'minkhant_cs',
-        contactViber: '+959450011223',
-        contactPhone: '09450011223'
-      },
-      {
-        id: 'list_7',
-        title: 'Keychron K2 Wireless Mechanical Keyboard (Gateron Brown)',
-        description: 'Mac & Windows dual layout with bluetooth and wired modes. White LED backlight. Comes with extra keycaps, keycap puller, and USB-C cable.',
-        priceMMK: 130000,
-        type: 'HARDWARE',
-        category: 'Peripherals & Accessories',
-        subCategory: 'Mechanical Keyboards',
-        previewUrl: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80',
-        isFeatured: false,
-        plan: 'FREEMIUM',
-        condition: 'EXCELLENT_90_PLUS',
-        meetupLocation: 'Junction Square or Time City, Yangon',
-        sellerId: 'usr_1',
-        createdAt: '4 days ago',
-        contactTelegram: 'aung_dev',
-        contactViber: '+959976543210',
-        contactPhone: '09976543210'
-      }
-    ];
-
-    /* Storage Retrieval */
     const savedUsers = localStorage.getItem('techswap_users');
-    const savedListings = localStorage.getItem('techswap_listings');
     const savedCurrentUserId = localStorage.getItem('techswap_current_user_id');
 
-    const AppState = {
+    window.AppState = {
       theme: localStorage.getItem('techswap_theme') || 'dark',
       users: savedUsers ? JSON.parse(savedUsers) : INITIAL_USERS,
-      listings: savedListings ? JSON.parse(savedListings) : INITIAL_LISTINGS,
+      listings: [],
       currentUser: null,
       activeDivision: 'ALL',
       selectedCategory: 'ALL',
@@ -947,28 +835,37 @@ model Listing {
     };
 
     if (savedCurrentUserId) {
-      AppState.currentUser = AppState.users.find(u => u.id === savedCurrentUserId) || AppState.users[0];
+      window.AppState.currentUser = window.AppState.users.find(u => u.id === savedCurrentUserId) || window.AppState.users[0];
     } else {
-      AppState.currentUser = AppState.users[0] || null;
+      window.AppState.currentUser = window.AppState.users[0] || null;
     }
 
+    // 🟢 Realtime Cloud Database Sync (အခြားသူများတင်သမျှ အားလုံး တပြိုင်နက်ပေါ်စေသည့်နေရာ)
+    const q = query(listingsCol, orderBy("createdAt", "desc"));
+    onSnapshot(q, (snapshot) => {
+      window.AppState.listings = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
+      window.renderListings();
+      window.renderCategoryPills();
+    }, (error) => {
+      console.error("Firebase Realtime Error:", error);
+    });
+
     function saveUserState() {
-      localStorage.setItem('techswap_users', JSON.stringify(AppState.users));
-      if (AppState.currentUser) {
-        localStorage.setItem('techswap_current_user_id', AppState.currentUser.id);
+      localStorage.setItem('techswap_users', JSON.stringify(window.AppState.users));
+      if (window.AppState.currentUser) {
+        localStorage.setItem('techswap_current_user_id', window.AppState.currentUser.id);
       } else {
         localStorage.removeItem('techswap_current_user_id');
       }
     }
 
-    function saveListingsState() {
-      localStorage.setItem('techswap_listings', JSON.stringify(AppState.listings));
-    }
-
-    function applyTheme() {
+    window.applyTheme = function() {
       const html = document.documentElement;
       const themeIcon = document.getElementById('theme-icon');
-      if (AppState.theme === 'dark') {
+      if (window.AppState.theme === 'dark') {
         html.classList.add('dark');
         if (themeIcon) themeIcon.setAttribute('data-lucide', 'sun');
       } else {
@@ -976,15 +873,15 @@ model Listing {
         if (themeIcon) themeIcon.setAttribute('data-lucide', 'moon');
       }
       lucide.createIcons();
-    }
+    };
 
-    function toggleTheme() {
-      AppState.theme = AppState.theme === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('techswap_theme', AppState.theme);
-      applyTheme();
-    }
+    window.toggleTheme = function() {
+      window.AppState.theme = window.AppState.theme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('techswap_theme', window.AppState.theme);
+      window.applyTheme();
+    };
 
-    function showToast(message) {
+    window.showToast = function(message) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       toast.className = 'pointer-events-auto flex items-center gap-3 bg-brand-600 text-white px-5 py-3 rounded-xl shadow-2xl border border-brand-400/40 transition-all duration-300';
@@ -1000,14 +897,14 @@ model Listing {
         toast.style.transform = 'translateY(-10px)';
         setTimeout(() => toast.remove(), 300);
       }, 3500);
-    }
+    };
 
-    function renderUserNav() {
+    window.renderUserNav = function() {
       const slot = document.getElementById('user-profile-button-slot');
       const activeUserBadge = document.getElementById('active-user-badge');
       const userSwitchList = document.getElementById('user-switch-list');
 
-      if (!AppState.currentUser) {
+      if (!window.AppState.currentUser) {
         slot.innerHTML = `
           <button onclick="openAuthModal('SIGN_IN')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-brand-600 dark:text-brand-400 border-slate-200 dark:border-slate-700 shadow-sm transition">
             <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
@@ -1019,34 +916,33 @@ model Listing {
         return;
       }
 
-      const userListingsCount = AppState.listings.filter(item => item.sellerId === AppState.currentUser.id).length;
-      const firstName = AppState.currentUser.name.split(' ')[0];
-      const isPro = AppState.currentUser.tier === 'PRO';
+      const firstName = window.AppState.currentUser.name.split(' ')[0];
+      const isPro = window.AppState.currentUser.tier === 'PRO';
 
       slot.innerHTML = `
         <button onclick="toggleUserDropdown(event)" class="flex items-center gap-2 border px-2.5 py-1.5 rounded-xl text-xs transition bg-white dark:bg-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700/80 shadow-sm">
-          <img src="${AppState.currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${AppState.currentUser.name}" class="w-5 h-5 rounded-full object-cover ring-1 ring-brand-500">
+          <img src="${window.AppState.currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${window.AppState.currentUser.name}" class="w-5 h-5 rounded-full object-cover ring-1 ring-brand-500">
           <div class="text-left hidden sm:block">
             <div class="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
               ${firstName}
               ${isPro ? '<i data-lucide="shield-check" class="w-3.5 h-3.5 text-brand-500"></i>' : ''}
             </div>
             <div class="text-[10px] text-slate-500 dark:text-slate-400">
-              ${isPro ? 'Verified Pro' : `Active Listings: ${userListingsCount}`}
+              ${isPro ? 'Verified Pro' : 'Community Member'}
             </div>
           </div>
         </button>
       `;
 
       activeUserBadge.innerHTML = `
-        <div class="font-semibold text-xs text-brand-500">${AppState.currentUser.name}</div>
-        <div class="text-[11px] text-slate-600 dark:text-slate-300">${AppState.currentUser.email}</div>
-        <div class="text-[10px] text-slate-400 mt-0.5">Telegram: @${AppState.currentUser.telegramHandle}</div>
+        <div class="font-semibold text-xs text-brand-500">${window.AppState.currentUser.name}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-300">${window.AppState.currentUser.email}</div>
+        <div class="text-[10px] text-slate-400 mt-0.5">Telegram: @${window.AppState.currentUser.telegramHandle || 'member'}</div>
       `;
 
-      userSwitchList.innerHTML = AppState.users.map(usr => `
+      userSwitchList.innerHTML = window.AppState.users.map(usr => `
         <button onclick="switchCurrentUser('${usr.id}')" class="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs transition ${
-          AppState.currentUser.id === usr.id 
+          window.AppState.currentUser.id === usr.id 
             ? 'bg-brand-50 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-500/30 font-semibold'
             : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
         }">
@@ -1061,13 +957,13 @@ model Listing {
       `).join('');
 
       lucide.createIcons();
-    }
+    };
 
-    function toggleUserDropdown(e) {
+    window.toggleUserDropdown = function(e) {
       e.stopPropagation();
       const menu = document.getElementById('user-dropdown-menu');
       menu.classList.toggle('hidden');
-    }
+    };
 
     document.addEventListener('click', (e) => {
       const wrapper = document.getElementById('user-menu-wrapper');
@@ -1077,30 +973,30 @@ model Listing {
       }
     });
 
-    function switchCurrentUser(id) {
-      const found = AppState.users.find(u => u.id === id);
+    window.switchCurrentUser = function(id) {
+      const found = window.AppState.users.find(u => u.id === id);
       if (found) {
-        AppState.currentUser = found;
+        window.AppState.currentUser = found;
         saveUserState();
         document.getElementById('user-dropdown-menu').classList.add('hidden');
-        renderUserNav();
-        renderListings();
-        showToast(`Switched active profile to ${found.name}`);
+        window.renderUserNav();
+        window.renderListings();
+        window.showToast(`Switched active profile to ${found.name}`);
       }
-    }
+    };
 
-    function signOutUser() {
-      AppState.currentUser = null;
+    window.signOutUser = function() {
+      window.AppState.currentUser = null;
       saveUserState();
       document.getElementById('user-dropdown-menu').classList.add('hidden');
-      renderUserNav();
-      renderListings();
-      showToast('Signed out of Tech Swap');
-    }
+      window.renderUserNav();
+      window.renderListings();
+      window.showToast('Signed out of Tech Swap');
+    };
 
-    function setDivision(division) {
-      AppState.activeDivision = division;
-      AppState.selectedCategory = 'ALL';
+    window.setDivision = function(division) {
+      window.AppState.activeDivision = division;
+      window.AppState.selectedCategory = 'ALL';
 
       const btnAll = document.getElementById('nav-btn-all');
       const btnSoft = document.getElementById('nav-btn-software');
@@ -1116,13 +1012,13 @@ model Listing {
       btnHard.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
         (division === 'HARDWARE' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold' : inactiveClasses);
 
-      renderCategoryPills();
-      renderListings();
-    }
+      window.renderCategoryPills();
+      window.renderListings();
+    };
 
-    function renderCategoryPills() {
+    window.renderCategoryPills = function() {
       const container = document.getElementById('category-pills-container');
-      const { activeDivision, selectedCategory, listings } = AppState;
+      const { activeDivision, selectedCategory, listings } = window.AppState;
 
       let pillsHTML = `
         <button onclick="setCategory('ALL')" class="text-xs px-3 py-1.5 rounded-xl border transition ${
@@ -1168,55 +1064,55 @@ model Listing {
 
       container.innerHTML = pillsHTML;
       lucide.createIcons();
-    }
+    };
 
-    function setCategory(cat) {
-      AppState.selectedCategory = cat;
-      renderCategoryPills();
-      renderListings();
-    }
+    window.setCategory = function(cat) {
+      window.AppState.selectedCategory = cat;
+      window.renderCategoryPills();
+      window.renderListings();
+    };
 
-    function handleSearchChange(val) {
-      AppState.searchQuery = val;
+    window.handleSearchChange = function(val) {
+      window.AppState.searchQuery = val;
       const clearBtn = document.getElementById('clear-search-btn');
       if (val.trim()) {
         clearBtn.classList.remove('hidden');
       } else {
         clearBtn.classList.add('hidden');
       }
-      renderListings();
-    }
+      window.renderListings();
+    };
 
-    function clearSearch() {
+    window.clearSearch = function() {
       const input = document.getElementById('search-input');
       input.value = '';
-      AppState.searchQuery = '';
+      window.AppState.searchQuery = '';
       document.getElementById('clear-search-btn').classList.add('hidden');
-      renderListings();
-    }
+      window.renderListings();
+    };
 
-    function handleSortChange(val) {
-      AppState.priceSort = val;
-      renderListings();
-    }
+    window.handleSortChange = function(val) {
+      window.AppState.priceSort = val;
+      window.renderListings();
+    };
 
-    function toggleFeaturedOnly() {
-      AppState.onlyFeatured = !AppState.onlyFeatured;
+    window.toggleFeaturedOnly = function() {
+      window.AppState.onlyFeatured = !window.AppState.onlyFeatured;
       const btn = document.getElementById('featured-toggle-btn');
-      if (AppState.onlyFeatured) {
+      if (window.AppState.onlyFeatured) {
         btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border transition bg-amber-500/20 text-amber-500 border-amber-500/40';
       } else {
         btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
       }
-      renderListings();
-    }
+      window.renderListings();
+    };
 
-    function resetAllFilters() {
-      AppState.activeDivision = 'ALL';
-      AppState.selectedCategory = 'ALL';
-      AppState.searchQuery = '';
-      AppState.priceSort = 'DEFAULT';
-      AppState.onlyFeatured = false;
+    window.resetAllFilters = function() {
+      window.AppState.activeDivision = 'ALL';
+      window.AppState.selectedCategory = 'ALL';
+      window.AppState.searchQuery = '';
+      window.AppState.priceSort = 'DEFAULT';
+      window.AppState.onlyFeatured = false;
 
       document.getElementById('search-input').value = '';
       document.getElementById('clear-search-btn').classList.add('hidden');
@@ -1225,39 +1121,39 @@ model Listing {
       const featBtn = document.getElementById('featured-toggle-btn');
       featBtn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
 
-      setDivision('ALL');
-    }
+      window.setDivision('ALL');
+    };
 
-    function renderListings() {
+    window.renderListings = function() {
       const grid = document.getElementById('listings-grid');
       const emptyState = document.getElementById('empty-state');
       const resetBtn = document.getElementById('reset-filters-btn');
       const catalogTitle = document.getElementById('catalog-title');
       const catalogSubtitle = document.getElementById('catalog-subtitle');
 
-      if (AppState.activeDivision === 'ALL') {
+      if (window.AppState.activeDivision === 'ALL') {
         catalogTitle.textContent = 'All Marketplace Listings';
-      } else if (AppState.activeDivision === 'SOFTWARE') {
+      } else if (window.AppState.activeDivision === 'SOFTWARE') {
         catalogTitle.textContent = 'Part 1: Software & Digital Assets';
       } else {
         catalogTitle.textContent = 'Part 2: Hardware & Pre-Owned Gear';
       }
 
-      const isFiltered = AppState.activeDivision !== 'ALL' || AppState.selectedCategory !== 'ALL' || AppState.searchQuery || AppState.onlyFeatured;
+      const isFiltered = window.AppState.activeDivision !== 'ALL' || window.AppState.selectedCategory !== 'ALL' || window.AppState.searchQuery || window.AppState.onlyFeatured;
       if (isFiltered) resetBtn.classList.remove('hidden');
       else resetBtn.classList.add('hidden');
 
-      const filtered = AppState.listings.filter(item => {
-        if (AppState.activeDivision !== 'ALL' && item.type !== AppState.activeDivision) return false;
-        if (AppState.selectedCategory !== 'ALL' && !AppState.selectedCategory.startsWith('All')) {
-          if (item.category !== AppState.selectedCategory) return false;
+      const filtered = window.AppState.listings.filter(item => {
+        if (window.AppState.activeDivision !== 'ALL' && item.type !== window.AppState.activeDivision) return false;
+        if (window.AppState.selectedCategory !== 'ALL' && !window.AppState.selectedCategory.startsWith('All')) {
+          if (item.category !== window.AppState.selectedCategory) return false;
         }
-        if (AppState.onlyFeatured && !item.isFeatured) return false;
-        if (AppState.searchQuery.trim() !== '') {
-          const q = AppState.searchQuery.toLowerCase();
-          const matchTitle = item.title.toLowerCase().includes(q);
-          const matchDesc = item.description.toLowerCase().includes(q);
-          const matchCat = item.category.toLowerCase().includes(q);
+        if (window.AppState.onlyFeatured && !item.isFeatured) return false;
+        if (window.AppState.searchQuery.trim() !== '') {
+          const q = window.AppState.searchQuery.toLowerCase();
+          const matchTitle = item.title?.toLowerCase().includes(q);
+          const matchDesc = item.description?.toLowerCase().includes(q);
+          const matchCat = item.category?.toLowerCase().includes(q);
           const matchLoc = item.meetupLocation ? item.meetupLocation.toLowerCase().includes(q) : false;
           if (!matchTitle && !matchDesc && !matchCat && !matchLoc) return false;
         }
@@ -1266,8 +1162,8 @@ model Listing {
 
       filtered.sort((a, b) => {
         if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
-        if (AppState.priceSort === 'LOW_TO_HIGH') return a.priceMMK - b.priceMMK;
-        if (AppState.priceSort === 'HIGH_TO_LOW') return b.priceMMK - a.priceMMK;
+        if (window.AppState.priceSort === 'LOW_TO_HIGH') return a.priceMMK - b.priceMMK;
+        if (window.AppState.priceSort === 'HIGH_TO_LOW') return b.priceMMK - a.priceMMK;
         return 0;
       });
 
@@ -1282,11 +1178,6 @@ model Listing {
       emptyState.classList.add('hidden');
 
       grid.innerHTML = filtered.map(item => {
-        const seller = AppState.users.find(u => u.id === item.sellerId) || {
-          name: 'Community Seller',
-          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
-          isVerified: false
-        };
         const isSoftware = item.type === 'SOFTWARE';
         const usdEst = (item.priceMMK / 3500).toFixed(1);
 
@@ -1339,7 +1230,7 @@ model Listing {
               <div>
                 <div class="flex items-center justify-between text-[11px] mb-1.5 text-slate-500 dark:text-slate-400">
                   <span class="truncate max-w-[170px]">${item.category}</span>
-                  <span>${item.createdAt}</span>
+                  <span>Direct Cloud</span>
                 </div>
 
                 <h3 class="font-semibold text-sm transition-colors line-clamp-2 leading-snug text-slate-900 dark:text-slate-100 group-hover:text-brand-500">
@@ -1348,7 +1239,7 @@ model Listing {
 
                 <div class="mt-2.5 flex items-baseline gap-2">
                   <span class="text-base font-extrabold text-slate-900 dark:text-white">
-                    ${item.priceMMK.toLocaleString()} MMK
+                    ${Number(item.priceMMK).toLocaleString()} MMK
                   </span>
                   <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">
                     ≈ $${usdEst}
@@ -1358,11 +1249,10 @@ model Listing {
 
               <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
                 <div class="flex items-center gap-1.5">
-                  <img src="${seller.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${seller.name}" class="w-5 h-5 rounded-full object-cover">
+                  <img src="${item.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="seller" class="w-5 h-5 rounded-full object-cover">
                   <span class="font-medium text-[11px] truncate max-w-[100px] text-slate-700 dark:text-slate-300">
-                    ${seller.name}
+                    ${item.sellerName || 'Verified Seller'}
                   </span>
-                  ${seller.isVerified ? '<i data-lucide="shield-check" class="w-3.5 h-3.5 text-brand-500 flex-shrink-0"></i>' : ''}
                 </div>
 
                 <div class="flex items-center gap-1 text-[11px] truncate max-w-[120px] text-slate-500 dark:text-slate-400">
@@ -1382,20 +1272,13 @@ model Listing {
       }).join('');
 
       lucide.createIcons();
-    }
+    };
 
-    function openProductModal(id) {
-      const item = AppState.listings.find(x => x.id === id);
+    window.openProductModal = function(id) {
+      const item = window.AppState.listings.find(x => x.id === id);
       if (!item) return;
-      AppState.activeProduct = item;
+      window.AppState.activeProduct = item;
 
-      const seller = AppState.users.find(u => u.id === item.sellerId) || {
-        name: 'Community Seller',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
-        telegramHandle: 'techswap',
-        phoneNumber: '09900000000',
-        isVerified: false
-      };
       const isSoftware = item.type === 'SOFTWARE';
 
       const typeBadge = document.getElementById('modal-type-badge');
@@ -1404,7 +1287,7 @@ model Listing {
         isSoftware ? 'bg-brand-500/20 text-brand-500 dark:text-brand-400 border border-brand-500/30' : 'bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 border border-indigo-500/30'
       }`;
 
-      document.getElementById('modal-item-id').textContent = `ID: ${item.id}`;
+      document.getElementById('modal-item-id').textContent = `ID: ${item.id.slice(0, 8)}`;
       document.getElementById('modal-img').src = item.previewUrl;
 
       const featBadge = document.getElementById('modal-featured-badge');
@@ -1413,7 +1296,7 @@ model Listing {
 
       document.getElementById('modal-category').textContent = `${item.category} · ${item.subCategory || 'General'}`;
       document.getElementById('modal-title').textContent = item.title;
-      document.getElementById('modal-price').textContent = `${item.priceMMK.toLocaleString()} MMK`;
+      document.getElementById('modal-price').textContent = `${Number(item.priceMMK).toLocaleString()} MMK`;
       document.getElementById('modal-desc').textContent = item.description;
 
       const specsDiv = document.getElementById('modal-specs');
@@ -1445,15 +1328,12 @@ model Listing {
         `;
       }
 
-      document.getElementById('modal-seller-avatar').src = seller.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-      document.getElementById('modal-seller-name').textContent = seller.name;
-      const verBadge = document.getElementById('modal-seller-verified');
-      if (seller.isVerified) verBadge.classList.remove('hidden');
-      else verBadge.classList.add('hidden');
+      document.getElementById('modal-seller-avatar').src = item.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+      document.getElementById('modal-seller-name').textContent = item.sellerName || 'Community Seller';
 
       // Contact or Owner Delete Control
       const actionSlot = document.getElementById('modal-action-buttons-slot');
-      const isOwner = AppState.currentUser && (item.sellerId === AppState.currentUser.id || (AppState.currentUser.email && seller.email === AppState.currentUser.email));
+      const isOwner = window.AppState.currentUser && (item.sellerEmail?.toLowerCase() === window.AppState.currentUser.email?.toLowerCase());
 
       if (isOwner) {
         actionSlot.innerHTML = `
@@ -1468,8 +1348,8 @@ model Listing {
           </div>
         `;
       } else {
-        const rawTg = (item.contactTelegram || seller.telegramHandle || 'techswap').replace('@', '');
-        const rawPhone = item.contactPhone || seller.phoneNumber || '09976543210';
+        const rawTg = (item.contactTelegram || 'techswap').replace('@', '');
+        const rawPhone = item.contactPhone || '09976543210';
 
         actionSlot.innerHTML = `
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1489,37 +1369,32 @@ model Listing {
       modal.classList.remove('hidden');
       modal.classList.add('flex');
       lucide.createIcons();
-    }
+    };
 
-    function closeProductModal() {
+    window.closeProductModal = function() {
       const modal = document.getElementById('product-detail-modal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
-      AppState.activeProduct = null;
-    }
+      window.AppState.activeProduct = null;
+    };
 
-    /* Delete / Mark as Sold Function */
-    function deleteListing(id) {
-      const item = AppState.listings.find(x => x.id === id);
-      if (!item) return;
-
-      const confirmDelete = confirm(`"${item.title}" ပစ္စည်း ရောင်းထွက်သွားပြီ ဖြစ်၍ စာရင်းထဲမှ အပြီးတိုင် ဖျက်ချင်တာ သေချာပါသလား?`);
+    /* Cloud Delete Listing */
+    window.deleteListing = async function(id) {
+      const confirmDelete = confirm("ပစ္စည်း ရောင်းထွက်သွားပြီ ဖြစ်၍ Cloud စာရင်းထဲမှ အပြီးတိုင် ဖျက်ချင်တာ သေချာပါသလား?");
       if (!confirmDelete) return;
 
-      // Filter out item
-      AppState.listings = AppState.listings.filter(x => x.id !== id);
-      saveListingsState(); // Save to LocalStorage
+      try {
+        await deleteDoc(doc(db, "listings", id));
+        window.closeProductModal();
+        window.showToast('ပစ္စည်းစာရင်းမှ အောင်မြင်စွာ ဖျက်ပြီးပါပြီ (Sold & Removed)!');
+      } catch (err) {
+        alert("ဖျက်ရာတွင် အမှားဖြစ်ပေါ်ပါသည်: " + err.message);
+      }
+    };
 
-      closeProductModal();
-      renderUserNav();
-      renderCategoryPills();
-      renderListings();
-      showToast('ပစ္စည်းစာရင်းမှ အောင်မြင်စွာ ဖျက်ပြီးပါပြီ (Sold & Removed)!');
-    }
-
-    function copyProductInquiry() {
-      if (!AppState.activeProduct) return;
-      const text = `Hi! I found your listing "${AppState.activeProduct.title}" (${AppState.activeProduct.priceMMK.toLocaleString()} MMK) on Tech Swap. Is it still available?`;
+    window.copyProductInquiry = function() {
+      if (!window.AppState.activeProduct) return;
+      const text = `Hi! I found your listing "${window.AppState.activeProduct.title}" (${Number(window.AppState.activeProduct.priceMMK).toLocaleString()} MMK) on Tech Swap. Is it still available?`;
       
       const textArea = document.createElement("textarea");
       textArea.value = text;
@@ -1527,35 +1402,35 @@ model Listing {
       textArea.select();
       try {
         document.execCommand('copy');
-        showToast('Copied inquiry message to clipboard!');
+        window.showToast('Copied inquiry message to clipboard!');
       } catch (err) {
-        showToast('Unable to copy text.');
+        window.showToast('Unable to copy text.');
       }
       document.body.removeChild(textArea);
-    }
+    };
 
-    function openCreateListingModal() {
-      if (AppState.currentUser) {
-        document.getElementById('post-seller-name').value = AppState.currentUser.name;
-        document.getElementById('post-seller-email').value = AppState.currentUser.email;
-        document.getElementById('post-seller-phone').value = AppState.currentUser.phoneNumber || '';
-        document.getElementById('post-seller-telegram').value = AppState.currentUser.telegramHandle || '';
+    window.openCreateListingModal = function() {
+      if (window.AppState.currentUser) {
+        document.getElementById('post-seller-name').value = window.AppState.currentUser.name;
+        document.getElementById('post-seller-email').value = window.AppState.currentUser.email;
+        document.getElementById('post-seller-phone').value = window.AppState.currentUser.phoneNumber || '';
+        document.getElementById('post-seller-telegram').value = window.AppState.currentUser.telegramHandle || '';
       }
       populatePostCategorySelect();
       const modal = document.getElementById('create-listing-modal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
       lucide.createIcons();
-    }
+    };
 
-    function closeCreateListingModal() {
+    window.closeCreateListingModal = function() {
       const modal = document.getElementById('create-listing-modal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
-    }
+    };
 
-    function selectListingPlan(plan) {
-      AppState.selectedPlan = plan;
+    window.selectListingPlan = function(plan) {
+      window.AppState.selectedPlan = plan;
       const cardFree = document.getElementById('plan-card-freemium');
       const cardPrem = document.getElementById('plan-card-premium');
       if (plan === 'FREEMIUM') {
@@ -1565,10 +1440,10 @@ model Listing {
         cardPrem.className = 'cursor-pointer p-3.5 rounded-xl border-2 border-amber-500 bg-amber-500/10 transition shadow-sm';
         cardFree.className = 'cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition';
       }
-    }
+    };
 
-    function setPostType(type) {
-      AppState.currentPostType = type;
+    window.setPostType = function(type) {
+      window.AppState.currentPostType = type;
       const btnSoft = document.getElementById('post-tab-software');
       const btnHard = document.getElementById('post-tab-hardware');
       const softFields = document.getElementById('post-software-fields');
@@ -1587,24 +1462,25 @@ model Listing {
       }
 
       populatePostCategorySelect();
-    }
+    };
 
     function populatePostCategorySelect() {
       const select = document.getElementById('post-category');
-      const list = AppState.currentPostType === 'SOFTWARE' ? CATEGORIES_DATA.SOFTWARE.slice(1) : CATEGORIES_DATA.HARDWARE.slice(1);
+      const list = window.AppState.currentPostType === 'SOFTWARE' ? CATEGORIES_DATA.SOFTWARE.slice(1) : CATEGORIES_DATA.HARDWARE.slice(1);
       select.innerHTML = list.map(c => `<option value="${c}">${c}</option>`).join('');
     }
 
-    function handleFormSubmitListing(e) {
+    /* Cloud Publish Listing */
+    window.handleFormSubmitListing = async function(e) {
       e.preventDefault();
 
       const name = document.getElementById('post-seller-name').value.trim();
       const email = document.getElementById('post-seller-email').value.trim();
       const phone = document.getElementById('post-seller-phone').value.trim();
       const tg = document.getElementById('post-seller-telegram').value.replace('@', '').trim();
-      const isPremium = AppState.selectedPlan === 'PREMIUM';
+      const isPremium = window.AppState.selectedPlan === 'PREMIUM';
 
-      let user = AppState.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      let user = window.AppState.users.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (!user) {
         user = {
           id: `usr_${Date.now()}`,
@@ -1613,21 +1489,16 @@ model Listing {
           phoneNumber: phone,
           telegramHandle: tg || 'swap_member',
           tier: isPremium ? 'PRO' : 'FREE',
-          isVerified: isPremium,
           avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
         };
-        AppState.users.unshift(user);
+        window.AppState.users.unshift(user);
       } else {
         user.name = name;
         user.phoneNumber = phone;
         user.telegramHandle = tg || user.telegramHandle;
-        if (isPremium) {
-          user.tier = 'PRO';
-          user.isVerified = true;
-        }
       }
 
-      AppState.currentUser = user;
+      window.AppState.currentUser = user;
       saveUserState();
 
       const title = document.getElementById('post-title').value.trim();
@@ -1636,28 +1507,29 @@ model Listing {
       const subCategory = document.getElementById('post-subcategory').value.trim();
       const description = document.getElementById('post-desc').value.trim();
       const previewUrl = document.getElementById('post-preview-url').value.trim() || 
-        (AppState.currentPostType === 'SOFTWARE' 
+        (window.AppState.currentPostType === 'SOFTWARE' 
           ? 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80' 
           : 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80');
 
       const newListing = {
-        id: `list_${Date.now()}`,
         title,
         description,
         priceMMK: price,
-        type: AppState.currentPostType,
+        type: window.AppState.currentPostType,
         category,
-        subCategory: subCategory || (AppState.currentPostType === 'SOFTWARE' ? 'Digital Asset' : 'Hardware Device'),
+        subCategory: subCategory || (window.AppState.currentPostType === 'SOFTWARE' ? 'Digital Asset' : 'Hardware Device'),
         previewUrl,
         isFeatured: isPremium,
-        plan: AppState.selectedPlan,
-        sellerId: user.id,
-        createdAt: 'Just now',
+        plan: window.AppState.selectedPlan,
+        sellerName: name,
+        sellerEmail: email,
+        sellerAvatar: user.avatar,
         contactPhone: phone,
-        contactTelegram: tg
+        contactTelegram: tg,
+        createdAt: serverTimestamp()
       };
 
-      if (AppState.currentPostType === 'HARDWARE') {
+      if (window.AppState.currentPostType === 'HARDWARE') {
         newListing.condition = document.getElementById('post-condition').value;
         const batt = document.getElementById('post-battery').value;
         if (batt) newListing.batteryHealth = parseInt(batt, 10);
@@ -1667,31 +1539,31 @@ model Listing {
         newListing.fileFormat = document.getElementById('post-file-format').value;
       }
 
-      AppState.listings.unshift(newListing);
-      saveListingsState();
+      try {
+        await addDoc(listingsCol, newListing);
+        window.closeCreateListingModal();
+        document.getElementById('create-listing-form').reset();
+        window.renderUserNav();
+        window.showToast(`Listing posted to Cloud under ${name}!`);
+      } catch (err) {
+        alert("Cloud သို့ ပစ္စည်းတင်ရာတွင် အမှားဖြစ်ပေါ်ပါသည်: " + err.message);
+      }
+    };
 
-      closeCreateListingModal();
-      document.getElementById('create-listing-form').reset();
-      renderUserNav();
-      renderListings();
-      renderCategoryPills();
-      showToast(`Listing posted and saved under ${user.name}!`);
-    }
-
-    function openAuthModal(initialTab = 'SIGN_IN') {
+    window.openAuthModal = function(initialTab = 'SIGN_IN') {
       switchAuthTab(initialTab);
       renderDemoUsersList();
       const modal = document.getElementById('auth-modal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
       lucide.createIcons();
-    }
+    };
 
-    function closeAuthModal() {
+    window.closeAuthModal = function() {
       const modal = document.getElementById('auth-modal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
-    }
+    };
 
     function switchAuthTab(tab) {
       const tabSignIn = document.getElementById('auth-tab-signin');
@@ -1710,14 +1582,14 @@ model Listing {
         tabSignUp.className = 'py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
         tabSignIn.className = 'py-2 rounded-xl transition text-slate-400 hover:text-slate-600';
         viewSignUp.classList.remove('hidden');
-        viewSignIn.classList.add('hidden');
+        viewSignUp.classList.add('hidden');
         title.textContent = 'Create Free Account';
       }
     }
 
     function renderDemoUsersList() {
       const list = document.getElementById('demo-users-list');
-      list.innerHTML = AppState.users.map(u => `
+      list.innerHTML = window.AppState.users.map(u => `
         <button type="button" onclick="selectDemoUser('${u.id}')" class="w-full flex items-center justify-between p-2 rounded-xl border text-left transition bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800">
           <div class="flex items-center gap-2">
             <img src="${u.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${u.name}" class="w-6 h-6 rounded-full object-cover">
@@ -1731,17 +1603,17 @@ model Listing {
       `).join('');
     }
 
-    function selectDemoUser(id) {
-      switchCurrentUser(id);
-      closeAuthModal();
-    }
+    window.selectDemoUser = function(id) {
+      window.switchCurrentUser(id);
+      window.closeAuthModal();
+    };
 
-    function handleEmailSignIn(e) {
+    window.handleEmailSignIn = function(e) {
       e.preventDefault();
       const email = document.getElementById('auth-signin-email').value.trim();
-      let matched = AppState.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      let matched = window.AppState.users.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (matched) {
-        AppState.currentUser = matched;
+        window.AppState.currentUser = matched;
       } else {
         const username = email.split('@')[0];
         matched = {
@@ -1757,18 +1629,18 @@ model Listing {
           township: 'Yangon',
           bio: 'Tech Swap Member'
         };
-        AppState.users.push(matched);
-        AppState.currentUser = matched;
+        window.AppState.users.push(matched);
+        window.AppState.currentUser = matched;
       }
       saveUserState();
-      closeAuthModal();
-      renderUserNav();
-      renderListings();
-      showToast(`Welcome, ${AppState.currentUser.name}!`);
-    }
+      window.closeAuthModal();
+      window.renderUserNav();
+      window.renderListings();
+      window.showToast(`Welcome, ${window.AppState.currentUser.name}!`);
+    };
 
-    function setRegTier(tier) {
-      AppState.regTier = tier;
+    window.setRegTier = function(tier) {
+      window.AppState.regTier = tier;
       const btnFree = document.getElementById('tier-btn-free');
       const btnPro = document.getElementById('tier-btn-pro');
       if (tier === 'FREE') {
@@ -1778,9 +1650,9 @@ model Listing {
         btnPro.className = 'py-2 px-3 rounded-xl border text-center transition bg-indigo-500/20 border-indigo-500 text-indigo-500 font-bold';
         btnFree.className = 'py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
       }
-    }
+    };
 
-    function handleUserSignUp(e) {
+    window.handleUserSignUp = function(e) {
       e.preventDefault();
       const name = document.getElementById('reg-name').value.trim();
       const email = document.getElementById('reg-email').value.trim();
@@ -1792,8 +1664,8 @@ model Listing {
         name,
         email,
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-        tier: AppState.regTier,
-        isVerified: AppState.regTier === 'PRO',
+        tier: window.AppState.regTier,
+        isVerified: window.AppState.regTier === 'PRO',
         telegramHandle: telegram,
         viberNumber: phone,
         phoneNumber: phone,
@@ -1801,33 +1673,33 @@ model Listing {
         bio: 'New Tech Swap community member'
       };
 
-      AppState.users.unshift(newUser);
-      AppState.currentUser = newUser;
+      window.AppState.users.unshift(newUser);
+      window.AppState.currentUser = newUser;
       saveUserState();
 
-      closeAuthModal();
+      window.closeAuthModal();
       document.getElementById('auth-signup-view').reset();
-      renderUserNav();
-      renderListings();
-      showToast(`Account registered! Welcome, ${newUser.name}!`);
-    }
+      window.renderUserNav();
+      window.renderListings();
+      window.showToast(`Account registered! Welcome, ${newUser.name}!`);
+    };
 
-    function openSchemaModal() {
+    window.openSchemaModal = function() {
       document.getElementById('prisma-code-block').textContent = PRISMA_SCHEMA_CODE;
-      setSchemaTab('PRISMA');
+      window.setSchemaTab('PRISMA');
       const modal = document.getElementById('schema-modal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
       lucide.createIcons();
-    }
+    };
 
-    function closeSchemaModal() {
+    window.closeSchemaModal = function() {
       const modal = document.getElementById('schema-modal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
-    }
+    };
 
-    function setSchemaTab(tab) {
+    window.setSchemaTab = function(tab) {
       const tabPrisma = document.getElementById('schema-tab-prisma');
       const tabP2p = document.getElementById('schema-tab-p2p');
       const viewPrisma = document.getElementById('schema-view-prisma');
@@ -1844,28 +1716,26 @@ model Listing {
         viewP2p.classList.remove('hidden');
         viewPrisma.classList.add('hidden');
       }
-    }
+    };
 
-    function copyPrismaSchema() {
+    window.copyPrismaSchema = function() {
       const textArea = document.createElement("textarea");
       textArea.value = PRISMA_SCHEMA_CODE;
       document.body.appendChild(textArea);
       textArea.select();
       try {
         document.execCommand('copy');
-        showToast('Prisma schema copied to clipboard!');
+        window.showToast('Prisma schema copied to clipboard!');
       } catch (err) {
-        showToast('Unable to copy schema.');
+        window.showToast('Unable to copy schema.');
       }
       document.body.removeChild(textArea);
-    }
+    };
 
     window.addEventListener('DOMContentLoaded', () => {
-      applyTheme();
-      renderUserNav();
-      renderCategoryPills();
-      renderListings();
-      lucide.createIcons();
+      window.applyTheme();
+      window.renderUserNav();
+      window.renderCategoryPills();
     });
   </script>
 </body>
