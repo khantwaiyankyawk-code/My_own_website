@@ -480,9 +480,36 @@
           <textarea id="post-desc" required rows="3" placeholder="Describe condition, specifications, bundled accessories, or digital asset details..." class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100"></textarea>
         </div>
 
+        <!-- Image Upload Source Tabs (File vs URL) -->
         <div>
-          <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Photo / Thumbnail Image URL</label>
-          <input type="url" id="post-preview-url" placeholder="https://images.unsplash.com/... (Leave empty for default cover)" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Product Image (ဓာတ်ပုံတင်ရန်နည်းလမ်း ရွေးချယ်ပါ)</label>
+          <div class="flex items-center gap-2 mb-2">
+            <button type="button" id="img-tab-file" onclick="setImageInputMode('FILE')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-500/20 text-brand-600 dark:text-brand-400 border border-brand-500/40">
+              <i data-lucide="upload" class="w-3 h-3 inline mr-1"></i> Upload File
+            </button>
+            <button type="button" id="img-tab-url" onclick="setImageInputMode('URL')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
+              <i data-lucide="link" class="w-3 h-3 inline mr-1"></i> Image URL
+            </button>
+          </div>
+
+          <!-- File Upload Input Option -->
+          <div id="img-file-container" class="space-y-2">
+            <input type="file" id="post-file-input" accept="image/*" onchange="handleLocalImageUpload(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-500 file:text-slate-950 hover:file:bg-brand-400 file:cursor-pointer border rounded-xl p-2 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+            <p class="text-[10px] text-slate-400">JPG, PNG, WebP ပုံများကို Device ထဲမှ တိုက်ရိုက်ရွေးချယ်နိုင်ပါသည်။</p>
+          </div>
+
+          <!-- URL Input Option -->
+          <div id="img-url-container" class="hidden">
+            <input type="url" id="post-preview-url" oninput="handleUrlImageInput(this.value)" placeholder="https://images.unsplash.com/... (Image URL ထည့်ပါ)" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          </div>
+
+          <!-- Image Preview Thumbnail -->
+          <div id="img-preview-box" class="hidden mt-2 relative w-24 h-24 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden bg-slate-900">
+            <img id="img-preview-tag" src="" alt="Preview" class="w-full h-full object-cover">
+            <button type="button" onclick="clearSelectedImage()" class="absolute top-1 right-1 bg-black/70 hover:bg-rose-600 text-white rounded-full p-1 transition" title="ပုံဖျက်မည်">
+              <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+          </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
@@ -540,8 +567,8 @@
           </button>
         </form>
 
-        <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
-          <div class="text-[11px] font-semibold text-slate-400 mb-2">Or One-Click Demo Sign In:</div>
+        <div id="demo-users-wrapper" class="hidden pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div class="text-[11px] font-semibold text-slate-400 mb-2">Switch to existing local account:</div>
           <div id="demo-users-list" class="space-y-1.5"></div>
         </div>
       </div>
@@ -550,16 +577,16 @@
       <form id="auth-signup-view" onsubmit="handleUserSignUp(event)" class="hidden p-5 space-y-3 text-xs">
         <div>
           <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Full Name *</label>
-          <input type="text" id="reg-name" required placeholder="e.g. Ko Phyo Win" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          <input type="text" id="reg-name" required placeholder="e.g. Ko Khant" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Email *</label>
-            <input type="email" id="reg-email" required placeholder="phyo@code.mm" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+            <input type="email" id="reg-email" required placeholder="khant@code.mm" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
           </div>
           <div>
-            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Telegram *</label>
-            <input type="text" id="reg-telegram" required placeholder="e.g. phyo_tech" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Telegram (Optional)</label>
+            <input type="text" id="reg-telegram" placeholder="e.g. khant_tech" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
           </div>
         </div>
         <div>
@@ -660,7 +687,6 @@
     </div>
   </footer>
 
-  <!-- Application Logic with Safe Storage & Error Boundaries -->
   <script>
     const PRISMA_SCHEMA_CODE = `// prisma/schema.prisma
 
@@ -728,47 +754,8 @@ model Listing {
       ]
     };
 
-    const INITIAL_USERS = [
-      {
-        id: 'usr_1',
-        name: 'Aung Kyaw Thu',
-        email: 'aung@developer.mm',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-        tier: 'PRO',
-        isVerified: true,
-        telegramHandle: 'aung_dev',
-        viberNumber: '+959976543210',
-        phoneNumber: '09976543210',
-        township: 'Hledan, Kamayut',
-        bio: 'Fullstack Next.js developer & tech gear enthusiast'
-      },
-      {
-        id: 'usr_2',
-        name: 'May Thet Htar',
-        email: 'may@student.edu.mm',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
-        tier: 'FREE',
-        isVerified: false,
-        telegramHandle: 'may_tech',
-        viberNumber: '+959798765432',
-        phoneNumber: '09798765432',
-        township: 'Sanchaung, Yangon',
-        bio: 'CS Student specializing in Data Science & UI'
-      },
-      {
-        id: 'usr_3',
-        name: 'Min Khant',
-        email: 'minkhant@code.io',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-        tier: 'PRO',
-        isVerified: true,
-        telegramHandle: 'minkhant_cs',
-        viberNumber: '+959450011223',
-        phoneNumber: '09450011223',
-        township: 'MICT Park, Hlaing',
-        bio: 'Hardware tinkerer & competitive programmer'
-      }
-    ];
+    // Default User များကို အားလုံးဖျက်ထုတ်ထားပြီးဖြစ်ပါသည်
+    const INITIAL_USERS = [];
 
     const INITIAL_LISTINGS = [
       {
@@ -784,9 +771,9 @@ model Listing {
         plan: 'PREMIUM',
         digitalType: 'STUDY_PACK',
         fileFormat: 'PDF + Notion Document',
-        sellerId: 'usr_2',
+        sellerId: 'usr_community',
         createdAt: '2 hours ago',
-        contactTelegram: 'may_tech',
+        contactTelegram: 'techswap',
         contactViber: '+959798765432',
         contactPhone: '09798765432'
       },
@@ -803,9 +790,9 @@ model Listing {
         plan: 'FREEMIUM',
         digitalType: 'NOTION_TEMPLATE',
         fileFormat: 'Instant Notion Duplicate Link',
-        sellerId: 'usr_2',
+        sellerId: 'usr_community',
         createdAt: '5 hours ago',
-        contactTelegram: 'may_tech',
+        contactTelegram: 'techswap',
         contactViber: '+959798765432',
         contactPhone: '09798765432'
       },
@@ -822,9 +809,9 @@ model Listing {
         plan: 'PREMIUM',
         digitalType: 'CODE_BOILERPLATE',
         fileFormat: 'Private GitHub Repo Invite + Zip',
-        sellerId: 'usr_1',
+        sellerId: 'usr_community',
         createdAt: 'Yesterday',
-        contactTelegram: 'aung_dev',
+        contactTelegram: 'techswap',
         contactViber: '+959976543210',
         contactPhone: '09976543210'
       },
@@ -842,79 +829,19 @@ model Listing {
         condition: 'EXCELLENT_90_PLUS',
         batteryHealth: 88,
         meetupLocation: 'Hledan Center or MICT Park, Yangon',
-        sellerId: 'usr_1',
+        sellerId: 'usr_community',
         createdAt: '1 day ago',
-        contactTelegram: 'aung_dev',
-        contactViber: '+959976543210',
-        contactPhone: '09976543210'
-      },
-      {
-        id: 'list_5',
-        title: 'Redmi K-series 5G Flagship (Used 6 Months, Mint)',
-        description: 'Snapdragon chipset, 120Hz AMOLED display, 67W charging brick included. Tempered glass applied from day 1 with zero scratches. Testing available around Sanchaung.',
-        priceMMK: 650000,
-        type: 'HARDWARE',
-        category: 'Smartphones & Tablets',
-        subCategory: 'Android Devices',
-        previewUrl: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80',
-        isFeatured: false,
-        plan: 'FREEMIUM',
-        condition: 'LIKE_NEW',
-        batteryHealth: 94,
-        meetupLocation: 'Dagon Centre 2 / Sanchaung, Yangon',
-        sellerId: 'usr_3',
-        createdAt: '2 days ago',
-        contactTelegram: 'minkhant_cs',
-        contactViber: '+959450011223',
-        contactPhone: '09450011223'
-      },
-      {
-        id: 'list_6',
-        title: 'Anker 65W GaN Fast Charger + 100W Braided Type-C Cable',
-        description: 'Dual USB-C and single USB-A compact wall charger. Supports PD 3.0 PPS fast charging for MacBooks, iPads, and Android phones. Purchased 2 months ago.',
-        priceMMK: 65000,
-        type: 'HARDWARE',
-        category: 'Chargers, Cables & Power Adapters',
-        subCategory: 'GaN Fast Chargers',
-        previewUrl: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80',
-        isFeatured: false,
-        plan: 'FREEMIUM',
-        condition: 'LIKE_NEW',
-        meetupLocation: 'MICT Park Main Entrance, Yangon',
-        sellerId: 'usr_3',
-        createdAt: '3 days ago',
-        contactTelegram: 'minkhant_cs',
-        contactViber: '+959450011223',
-        contactPhone: '09450011223'
-      },
-      {
-        id: 'list_7',
-        title: 'Keychron K2 Wireless Mechanical Keyboard (Gateron Brown)',
-        description: 'Mac & Windows dual layout with bluetooth and wired modes. White LED backlight. Comes with extra keycaps, keycap puller, and USB-C cable.',
-        priceMMK: 130000,
-        type: 'HARDWARE',
-        category: 'Peripherals & Accessories',
-        subCategory: 'Mechanical Keyboards',
-        previewUrl: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80',
-        isFeatured: false,
-        plan: 'FREEMIUM',
-        condition: 'EXCELLENT_90_PLUS',
-        meetupLocation: 'Junction Square or Time City, Yangon',
-        sellerId: 'usr_1',
-        createdAt: '4 days ago',
-        contactTelegram: 'aung_dev',
+        contactTelegram: 'techswap',
         contactViber: '+959976543210',
         contactPhone: '09976543210'
       }
     ];
 
-    /* Safe Storage Retrieval (Error-Free) */
     function safeGetJSON(key, fallback) {
       try {
         const item = localStorage.getItem(key);
         return item ? JSON.parse(item) : fallback;
       } catch (e) {
-        console.error('Storage parse error for', key, e);
         return fallback;
       }
     }
@@ -923,7 +850,7 @@ model Listing {
       theme: localStorage.getItem('techswap_theme') || 'dark',
       users: safeGetJSON('techswap_users', INITIAL_USERS),
       listings: safeGetJSON('techswap_listings', INITIAL_LISTINGS),
-      currentUser: null, // စတင်ချိန်တွင် ဘာ acc မှ မဝင်ထားစေပါ (Guest)
+      currentUser: null,
       pendingCreateListing: false,
       activeDivision: 'ALL',
       selectedCategory: 'ALL',
@@ -934,8 +861,15 @@ model Listing {
       currentPostType: 'SOFTWARE',
       regTier: 'FREE',
       selectedPlan: 'FREEMIUM',
-      isUserDropdownOpen: false
+      imageInputMode: 'FILE',
+      selectedImageSrc: ''
     };
+
+    // User Session စစ်ဆေးခြင်း
+    const savedCurrentUserId = localStorage.getItem('techswap_current_user_id');
+    if (savedCurrentUserId) {
+      AppState.currentUser = AppState.users.find(u => u.id === savedCurrentUserId) || null;
+    }
 
     function safeLucide() {
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -1010,7 +944,6 @@ model Listing {
 
       if (!slot) return;
 
-      // စစဝင်ချင်း မည်သည့် Account မှ မဝင်ထားသည့် အခြေအနေ (Guest Mode)
       if (!AppState.currentUser) {
         slot.innerHTML = `
           <button onclick="openAuthModal('SIGN_IN')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-brand-600 dark:text-brand-400 border-slate-200 dark:border-slate-700 shadow-sm transition">
@@ -1023,7 +956,6 @@ model Listing {
         return;
       }
 
-      // Account ဝင်ထားပြီးပါက ပြသပေးမည့် Profile UI
       const userListingsCount = AppState.listings.filter(item => item.sellerId === AppState.currentUser.id).length;
       const firstName = (AppState.currentUser.name || 'User').split(' ')[0];
       const isPro = AppState.currentUser.tier === 'PRO';
@@ -1052,21 +984,25 @@ model Listing {
       }
 
       if (userSwitchList) {
-        userSwitchList.innerHTML = AppState.users.map(usr => `
-          <button onclick="switchCurrentUser('${usr.id}')" class="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs transition ${
-            AppState.currentUser && AppState.currentUser.id === usr.id 
-              ? 'bg-brand-50 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-500/30 font-semibold'
-              : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
-          }">
-            <div class="flex items-center gap-2">
-              <img src="${usr.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${usr.name}" class="w-5 h-5 rounded-full object-cover">
-              <span class="truncate max-w-[120px]">${usr.name}</span>
-            </div>
-            <span class="text-[9px] px-1.5 py-0.5 rounded font-mono ${
-              usr.tier === 'PRO' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-500/20 text-slate-400'
-            }">${usr.tier}</span>
-          </button>
-        `).join('');
+        if (AppState.users.length === 0) {
+          userSwitchList.innerHTML = `<div class="text-[11px] text-slate-400 px-2 py-1">No other accounts</div>`;
+        } else {
+          userSwitchList.innerHTML = AppState.users.map(usr => `
+            <button onclick="switchCurrentUser('${usr.id}')" class="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs transition ${
+              AppState.currentUser && AppState.currentUser.id === usr.id 
+                ? 'bg-brand-50 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-500/30 font-semibold'
+                : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+            }">
+              <div class="flex items-center gap-2">
+                <img src="${usr.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${usr.name}" class="w-5 h-5 rounded-full object-cover">
+                <span class="truncate max-w-[120px]">${usr.name}</span>
+              </div>
+              <span class="text-[9px] px-1.5 py-0.5 rounded font-mono ${
+                usr.tier === 'PRO' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-500/20 text-slate-400'
+              }">${usr.tier}</span>
+            </button>
+          `).join('');
+        }
       }
 
       safeLucide();
@@ -1095,7 +1031,7 @@ model Listing {
         if (menu) menu.classList.add('hidden');
         renderUserNav();
         renderListings();
-        showToast(`Switched active profile to ${found.name}`);
+        showToast(`Switched profile to ${found.name}`);
       }
     }
 
@@ -1483,7 +1419,6 @@ model Listing {
       if (seller.isVerified) verBadge.classList.remove('hidden');
       else verBadge.classList.add('hidden');
 
-      // Contact or Owner Controls
       const actionSlot = document.getElementById('modal-action-buttons-slot');
       const isOwner = AppState.currentUser && (item.sellerId === AppState.currentUser.id || (AppState.currentUser.email && seller.email === AppState.currentUser.email));
 
@@ -1532,7 +1467,6 @@ model Listing {
       AppState.activeProduct = null;
     }
 
-    /* Delete / Mark as Sold Function */
     function deleteListing(id) {
       const item = AppState.listings.find(x => x.id === id);
       if (!item) return;
@@ -1567,6 +1501,77 @@ model Listing {
       document.body.removeChild(textArea);
     }
 
+    /* Image Upload & Mode Logic (File vs URL) */
+    function setImageInputMode(mode) {
+      AppState.imageInputMode = mode;
+      const tabFile = document.getElementById('img-tab-file');
+      const tabUrl = document.getElementById('img-tab-url');
+      const contFile = document.getElementById('img-file-container');
+      const contUrl = document.getElementById('img-url-container');
+
+      if (mode === 'FILE') {
+        tabFile.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-500/20 text-brand-600 dark:text-brand-400 border border-brand-500/40';
+        tabUrl.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200';
+        contFile.classList.remove('hidden');
+        contUrl.classList.add('hidden');
+      } else {
+        tabUrl.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-500/20 text-brand-600 dark:text-brand-400 border border-brand-500/40';
+        tabFile.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200';
+        contUrl.classList.remove('hidden');
+        contFile.classList.add('hidden');
+      }
+      safeLucide();
+    }
+
+    function handleLocalImageUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('ဓာတ်ပုံအရွယ်အစားသည် 2MB ထက် မကျော်လွန်ရပါ');
+        e.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        AppState.selectedImageSrc = event.target.result;
+        showImagePreview(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleUrlImageInput(url) {
+      if (url.trim()) {
+        AppState.selectedImageSrc = url.trim();
+        showImagePreview(url.trim());
+      } else {
+        clearSelectedImage();
+      }
+    }
+
+    function showImagePreview(src) {
+      const box = document.getElementById('img-preview-box');
+      const tag = document.getElementById('img-preview-tag');
+      if (box && tag) {
+        tag.src = src;
+        box.classList.remove('hidden');
+      }
+    }
+
+    function clearSelectedImage() {
+      AppState.selectedImageSrc = '';
+      const box = document.getElementById('img-preview-box');
+      const tag = document.getElementById('img-preview-tag');
+      const fileInput = document.getElementById('post-file-input');
+      const urlInput = document.getElementById('post-preview-url');
+
+      if (tag) tag.src = '';
+      if (box) box.classList.add('hidden');
+      if (fileInput) fileInput.value = '';
+      if (urlInput) urlInput.value = '';
+    }
+
     /* Post Listing Trigger Logic */
     function openCreateListingModal() {
       if (!AppState.currentUser) {
@@ -1586,7 +1591,10 @@ model Listing {
       if (phoneInput) phoneInput.value = AppState.currentUser.phoneNumber || '';
       if (tgInput) tgInput.value = AppState.currentUser.telegramHandle || '';
 
+      clearSelectedImage();
+      setImageInputMode('FILE');
       populatePostCategorySelect();
+
       const modal = document.getElementById('create-listing-modal');
       if (modal) {
         modal.classList.remove('hidden');
@@ -1687,7 +1695,9 @@ model Listing {
       const category = document.getElementById('post-category').value;
       const subCategory = document.getElementById('post-subcategory').value.trim();
       const description = document.getElementById('post-desc').value.trim();
-      const previewUrl = document.getElementById('post-preview-url').value.trim() || 
+
+      // ပုံ preview ရွေးချယ်မှု (File Upload သို့မဟုတ် URL)
+      const previewUrl = AppState.selectedImageSrc || 
         (AppState.currentPostType === 'SOFTWARE' 
           ? 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80' 
           : 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80');
@@ -1724,6 +1734,7 @@ model Listing {
 
       closeCreateListingModal();
       document.getElementById('create-listing-form').reset();
+      clearSelectedImage();
       renderUserNav();
       renderListings();
       renderCategoryPills();
@@ -1772,9 +1783,17 @@ model Listing {
     }
 
     function renderDemoUsersList() {
+      const wrapper = document.getElementById('demo-users-wrapper');
       const list = document.getElementById('demo-users-list');
-      if (!list) return;
-      list.innerHTML = (AppState.users || []).map(u => `
+      if (!list || !wrapper) return;
+
+      if (AppState.users.length === 0) {
+        wrapper.classList.add('hidden');
+        return;
+      }
+
+      wrapper.classList.remove('hidden');
+      list.innerHTML = AppState.users.map(u => `
         <button type="button" onclick="selectDemoUser('${u.id}')" class="w-full flex items-center justify-between p-2 rounded-xl border text-left transition bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800">
           <div class="flex items-center gap-2">
             <img src="${u.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${u.name}" class="w-6 h-6 rounded-full object-cover">
@@ -1936,7 +1955,6 @@ model Listing {
       document.body.removeChild(textArea);
     }
 
-    // App Initialization with Error Boundary
     window.addEventListener('DOMContentLoaded', () => {
       try {
         applyTheme();
