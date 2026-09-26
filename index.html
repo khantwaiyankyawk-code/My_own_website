@@ -480,36 +480,9 @@
           <textarea id="post-desc" required rows="3" placeholder="Describe condition, specifications, bundled accessories, or digital asset details..." class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100"></textarea>
         </div>
 
-        <!-- Image Upload Source Tabs (File vs URL) -->
         <div>
-          <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Product Image (ဓာတ်ပုံတင်ရန်နည်းလမ်း ရွေးချယ်ပါ)</label>
-          <div class="flex items-center gap-2 mb-2">
-            <button type="button" id="img-tab-file" onclick="setImageInputMode('FILE')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-500/20 text-brand-600 dark:text-brand-400 border border-brand-500/40">
-              <i data-lucide="upload" class="w-3 h-3 inline mr-1"></i> Upload File
-            </button>
-            <button type="button" id="img-tab-url" onclick="setImageInputMode('URL')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
-              <i data-lucide="link" class="w-3 h-3 inline mr-1"></i> Image URL
-            </button>
-          </div>
-
-          <!-- File Upload Input Option -->
-          <div id="img-file-container" class="space-y-2">
-            <input type="file" id="post-file-input" accept="image/*" onchange="handleLocalImageUpload(event)" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-500 file:text-slate-950 hover:file:bg-brand-400 file:cursor-pointer border rounded-xl p-2 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-            <p class="text-[10px] text-slate-400">JPG, PNG, WebP ပုံများကို Device ထဲမှ တိုက်ရိုက်ရွေးချယ်နိုင်ပါသည်။</p>
-          </div>
-
-          <!-- URL Input Option -->
-          <div id="img-url-container" class="hidden">
-            <input type="url" id="post-preview-url" oninput="handleUrlImageInput(this.value)" placeholder="https://images.unsplash.com/... (Image URL ထည့်ပါ)" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
-          </div>
-
-          <!-- Image Preview Thumbnail -->
-          <div id="img-preview-box" class="hidden mt-2 relative w-24 h-24 rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden bg-slate-900">
-            <img id="img-preview-tag" src="" alt="Preview" class="w-full h-full object-cover">
-            <button type="button" onclick="clearSelectedImage()" class="absolute top-1 right-1 bg-black/70 hover:bg-rose-600 text-white rounded-full p-1 transition" title="ပုံဖျက်မည်">
-              <i data-lucide="x" class="w-3 h-3"></i>
-            </button>
-          </div>
+          <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Photo / Thumbnail Image URL</label>
+          <input type="url" id="post-preview-url" placeholder="https://images.unsplash.com/... (Leave empty for default cover)" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
@@ -567,8 +540,8 @@
           </button>
         </form>
 
-        <div id="demo-users-wrapper" class="hidden pt-3 border-t border-slate-100 dark:border-slate-800">
-          <div class="text-[11px] font-semibold text-slate-400 mb-2">Switch to existing local account:</div>
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div class="text-[11px] font-semibold text-slate-400 mb-2">Or One-Click Demo Sign In:</div>
           <div id="demo-users-list" class="space-y-1.5"></div>
         </div>
       </div>
@@ -577,16 +550,16 @@
       <form id="auth-signup-view" onsubmit="handleUserSignUp(event)" class="hidden p-5 space-y-3 text-xs">
         <div>
           <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Full Name *</label>
-          <input type="text" id="reg-name" required placeholder="e.g. Ko Khant" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          <input type="text" id="reg-name" required placeholder="e.g. Ko Phyo Win" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Email *</label>
-            <input type="email" id="reg-email" required placeholder="khant@code.mm" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+            <input type="email" id="reg-email" required placeholder="phyo@code.mm" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
           </div>
           <div>
-            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Telegram (Optional)</label>
-            <input type="text" id="reg-telegram" placeholder="e.g. khant_tech" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Telegram *</label>
+            <input type="text" id="reg-telegram" required placeholder="e.g. phyo_tech" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
           </div>
         </div>
         <div>
@@ -687,6 +660,7 @@
     </div>
   </footer>
 
+  <!-- Application Logic -->
   <script>
     const PRISMA_SCHEMA_CODE = `// prisma/schema.prisma
 
@@ -754,8 +728,47 @@ model Listing {
       ]
     };
 
-    // Default User များကို အားလုံးဖျက်ထုတ်ထားပြီးဖြစ်ပါသည်
-    const INITIAL_USERS = [];
+    const INITIAL_USERS = [
+      {
+        id: 'usr_1',
+        name: 'Aung Kyaw Thu',
+        email: 'aung@developer.mm',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+        tier: 'PRO',
+        isVerified: true,
+        telegramHandle: 'aung_dev',
+        viberNumber: '+959976543210',
+        phoneNumber: '09976543210',
+        township: 'Hledan, Kamayut',
+        bio: 'Fullstack Next.js developer & tech gear enthusiast'
+      },
+      {
+        id: 'usr_2',
+        name: 'May Thet Htar',
+        email: 'may@student.edu.mm',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+        tier: 'FREE',
+        isVerified: false,
+        telegramHandle: 'may_tech',
+        viberNumber: '+959798765432',
+        phoneNumber: '09798765432',
+        township: 'Sanchaung, Yangon',
+        bio: 'CS Student specializing in Data Science & UI'
+      },
+      {
+        id: 'usr_3',
+        name: 'Min Khant',
+        email: 'minkhant@code.io',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+        tier: 'PRO',
+        isVerified: true,
+        telegramHandle: 'minkhant_cs',
+        viberNumber: '+959450011223',
+        phoneNumber: '09450011223',
+        township: 'MICT Park, Hlaing',
+        bio: 'Hardware tinkerer & competitive programmer'
+      }
+    ];
 
     const INITIAL_LISTINGS = [
       {
@@ -771,9 +784,9 @@ model Listing {
         plan: 'PREMIUM',
         digitalType: 'STUDY_PACK',
         fileFormat: 'PDF + Notion Document',
-        sellerId: 'usr_community',
+        sellerId: 'usr_2',
         createdAt: '2 hours ago',
-        contactTelegram: 'techswap',
+        contactTelegram: 'may_tech',
         contactViber: '+959798765432',
         contactPhone: '09798765432'
       },
@@ -790,9 +803,9 @@ model Listing {
         plan: 'FREEMIUM',
         digitalType: 'NOTION_TEMPLATE',
         fileFormat: 'Instant Notion Duplicate Link',
-        sellerId: 'usr_community',
+        sellerId: 'usr_2',
         createdAt: '5 hours ago',
-        contactTelegram: 'techswap',
+        contactTelegram: 'may_tech',
         contactViber: '+959798765432',
         contactPhone: '09798765432'
       },
@@ -809,9 +822,9 @@ model Listing {
         plan: 'PREMIUM',
         digitalType: 'CODE_BOILERPLATE',
         fileFormat: 'Private GitHub Repo Invite + Zip',
-        sellerId: 'usr_community',
+        sellerId: 'usr_1',
         createdAt: 'Yesterday',
-        contactTelegram: 'techswap',
+        contactTelegram: 'aung_dev',
         contactViber: '+959976543210',
         contactPhone: '09976543210'
       },
@@ -829,29 +842,83 @@ model Listing {
         condition: 'EXCELLENT_90_PLUS',
         batteryHealth: 88,
         meetupLocation: 'Hledan Center or MICT Park, Yangon',
-        sellerId: 'usr_community',
+        sellerId: 'usr_1',
         createdAt: '1 day ago',
-        contactTelegram: 'techswap',
+        contactTelegram: 'aung_dev',
+        contactViber: '+959976543210',
+        contactPhone: '09976543210'
+      },
+      {
+        id: 'list_5',
+        title: 'Redmi K-series 5G Flagship (Used 6 Months, Mint)',
+        description: 'Snapdragon chipset, 120Hz AMOLED display, 67W charging brick included. Tempered glass applied from day 1 with zero scratches. Testing available around Sanchaung.',
+        priceMMK: 650000,
+        type: 'HARDWARE',
+        category: 'Smartphones & Tablets',
+        subCategory: 'Android Devices',
+        previewUrl: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80',
+        isFeatured: false,
+        plan: 'FREEMIUM',
+        condition: 'LIKE_NEW',
+        batteryHealth: 94,
+        meetupLocation: 'Dagon Centre 2 / Sanchaung, Yangon',
+        sellerId: 'usr_3',
+        createdAt: '2 days ago',
+        contactTelegram: 'minkhant_cs',
+        contactViber: '+959450011223',
+        contactPhone: '09450011223'
+      },
+      {
+        id: 'list_6',
+        title: 'Anker 65W GaN Fast Charger + 100W Braided Type-C Cable',
+        description: 'Dual USB-C and single USB-A compact wall charger. Supports PD 3.0 PPS fast charging for MacBooks, iPads, and Android phones. Purchased 2 months ago.',
+        priceMMK: 65000,
+        type: 'HARDWARE',
+        category: 'Chargers, Cables & Power Adapters',
+        subCategory: 'GaN Fast Chargers',
+        previewUrl: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80',
+        isFeatured: false,
+        plan: 'FREEMIUM',
+        condition: 'LIKE_NEW',
+        meetupLocation: 'MICT Park Main Entrance, Yangon',
+        sellerId: 'usr_3',
+        createdAt: '3 days ago',
+        contactTelegram: 'minkhant_cs',
+        contactViber: '+959450011223',
+        contactPhone: '09450011223'
+      },
+      {
+        id: 'list_7',
+        title: 'Keychron K2 Wireless Mechanical Keyboard (Gateron Brown)',
+        description: 'Mac & Windows dual layout with bluetooth and wired modes. White LED backlight. Comes with extra keycaps, keycap puller, and USB-C cable.',
+        priceMMK: 130000,
+        type: 'HARDWARE',
+        category: 'Peripherals & Accessories',
+        subCategory: 'Mechanical Keyboards',
+        previewUrl: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80',
+        isFeatured: false,
+        plan: 'FREEMIUM',
+        condition: 'EXCELLENT_90_PLUS',
+        meetupLocation: 'Junction Square or Time City, Yangon',
+        sellerId: 'usr_1',
+        createdAt: '4 days ago',
+        contactTelegram: 'aung_dev',
         contactViber: '+959976543210',
         contactPhone: '09976543210'
       }
     ];
 
-    function safeGetJSON(key, fallback) {
-      try {
-        const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : fallback;
-      } catch (e) {
-        return fallback;
-      }
-    }
+    /* Storage Retrieval */
+    const savedUsers = localStorage.getItem('techswap_users');
+    const savedListings = localStorage.getItem('techswap_listings');
+    const savedCurrentUserId = localStorage.getItem('techswap_current_user_id');
 
     const AppState = {
       theme: localStorage.getItem('techswap_theme') || 'dark',
-      users: safeGetJSON('techswap_users', INITIAL_USERS),
-      listings: safeGetJSON('techswap_listings', INITIAL_LISTINGS),
-      currentUser: null,
-      pendingCreateListing: false,
+      users: savedUsers ? JSON.parse(savedUsers) : INITIAL_USERS,
+      listings: savedListings ? JSON.parse(savedListings) : INITIAL_LISTINGS,
+      currentUser: null, // စတင်ချိန်တွင် မည်သည့် acc မှ မဝင်စေရန် null သတ်မှတ်ထားသည်
+      pendingCreateListing: false, // Login မဝင်ရသေးဘဲ Post ခလုတ်နှိပ်သည့်အခါ ပြန်ပွင့်စေရန်
       activeDivision: 'ALL',
       selectedCategory: 'ALL',
       searchQuery: '',
@@ -861,41 +928,25 @@ model Listing {
       currentPostType: 'SOFTWARE',
       regTier: 'FREE',
       selectedPlan: 'FREEMIUM',
-      imageInputMode: 'FILE',
-      selectedImageSrc: ''
+      isUserDropdownOpen: false
     };
 
-    // User Session စစ်ဆေးခြင်း
-    const savedCurrentUserId = localStorage.getItem('techswap_current_user_id');
+    // User ကိုယ်တိုင် login ဝင်ထားခဲ့မှသာ ပြန်ဆွဲထုတ်ပေးမည် (Default မရှိတော့ပါ)
     if (savedCurrentUserId) {
       AppState.currentUser = AppState.users.find(u => u.id === savedCurrentUserId) || null;
     }
 
-    function safeLucide() {
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons();
-      }
-    }
-
     function saveUserState() {
-      try {
-        localStorage.setItem('techswap_users', JSON.stringify(AppState.users));
-        if (AppState.currentUser) {
-          localStorage.setItem('techswap_current_user_id', AppState.currentUser.id);
-        } else {
-          localStorage.removeItem('techswap_current_user_id');
-        }
-      } catch (e) {
-        console.warn('Storage save failed:', e);
+      localStorage.setItem('techswap_users', JSON.stringify(AppState.users));
+      if (AppState.currentUser) {
+        localStorage.setItem('techswap_current_user_id', AppState.currentUser.id);
+      } else {
+        localStorage.removeItem('techswap_current_user_id');
       }
     }
 
     function saveListingsState() {
-      try {
-        localStorage.setItem('techswap_listings', JSON.stringify(AppState.listings));
-      } catch (e) {
-        console.warn('Storage save failed:', e);
-      }
+      localStorage.setItem('techswap_listings', JSON.stringify(AppState.listings));
     }
 
     function applyTheme() {
@@ -908,7 +959,7 @@ model Listing {
         html.classList.remove('dark');
         if (themeIcon) themeIcon.setAttribute('data-lucide', 'moon');
       }
-      safeLucide();
+      lucide.createIcons();
     }
 
     function toggleTheme() {
@@ -919,7 +970,6 @@ model Listing {
 
     function showToast(message) {
       const container = document.getElementById('toast-container');
-      if (!container) return;
       const toast = document.createElement('div');
       toast.className = 'pointer-events-auto flex items-center gap-3 bg-brand-600 text-white px-5 py-3 rounded-xl shadow-2xl border border-brand-400/40 transition-all duration-300';
       toast.innerHTML = `
@@ -927,7 +977,7 @@ model Listing {
         <span class="text-sm font-medium">${message}</span>
       `;
       container.appendChild(toast);
-      safeLucide();
+      lucide.createIcons();
 
       setTimeout(() => {
         toast.style.opacity = '0';
@@ -940,9 +990,6 @@ model Listing {
       const slot = document.getElementById('user-profile-button-slot');
       const activeUserBadge = document.getElementById('active-user-badge');
       const userSwitchList = document.getElementById('user-switch-list');
-      const menu = document.getElementById('user-dropdown-menu');
-
-      if (!slot) return;
 
       if (!AppState.currentUser) {
         slot.innerHTML = `
@@ -951,13 +998,13 @@ model Listing {
             <span>Sign In</span>
           </button>
         `;
-        if (menu) menu.classList.add('hidden');
-        safeLucide();
+        document.getElementById('user-dropdown-menu').classList.add('hidden');
+        lucide.createIcons();
         return;
       }
 
       const userListingsCount = AppState.listings.filter(item => item.sellerId === AppState.currentUser.id).length;
-      const firstName = (AppState.currentUser.name || 'User').split(' ')[0];
+      const firstName = AppState.currentUser.name.split(' ')[0];
       const isPro = AppState.currentUser.tier === 'PRO';
 
       slot.innerHTML = `
@@ -975,43 +1022,35 @@ model Listing {
         </button>
       `;
 
-      if (activeUserBadge) {
-        activeUserBadge.innerHTML = `
-          <div class="font-semibold text-xs text-brand-500">${AppState.currentUser.name}</div>
-          <div class="text-[11px] text-slate-600 dark:text-slate-300">${AppState.currentUser.email}</div>
-          <div class="text-[10px] text-slate-400 mt-0.5">Telegram: @${AppState.currentUser.telegramHandle || 'member'}</div>
-        `;
-      }
+      activeUserBadge.innerHTML = `
+        <div class="font-semibold text-xs text-brand-500">${AppState.currentUser.name}</div>
+        <div class="text-[11px] text-slate-600 dark:text-slate-300">${AppState.currentUser.email}</div>
+        <div class="text-[10px] text-slate-400 mt-0.5">Telegram: @${AppState.currentUser.telegramHandle}</div>
+      `;
 
-      if (userSwitchList) {
-        if (AppState.users.length === 0) {
-          userSwitchList.innerHTML = `<div class="text-[11px] text-slate-400 px-2 py-1">No other accounts</div>`;
-        } else {
-          userSwitchList.innerHTML = AppState.users.map(usr => `
-            <button onclick="switchCurrentUser('${usr.id}')" class="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs transition ${
-              AppState.currentUser && AppState.currentUser.id === usr.id 
-                ? 'bg-brand-50 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-500/30 font-semibold'
-                : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
-            }">
-              <div class="flex items-center gap-2">
-                <img src="${usr.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${usr.name}" class="w-5 h-5 rounded-full object-cover">
-                <span class="truncate max-w-[120px]">${usr.name}</span>
-              </div>
-              <span class="text-[9px] px-1.5 py-0.5 rounded font-mono ${
-                usr.tier === 'PRO' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-500/20 text-slate-400'
-              }">${usr.tier}</span>
-            </button>
-          `).join('');
-        }
-      }
+      userSwitchList.innerHTML = AppState.users.map(usr => `
+        <button onclick="switchCurrentUser('${usr.id}')" class="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs transition ${
+          AppState.currentUser.id === usr.id 
+            ? 'bg-brand-50 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-500/30 font-semibold'
+            : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+        }">
+          <div class="flex items-center gap-2">
+            <img src="${usr.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${usr.name}" class="w-5 h-5 rounded-full object-cover">
+            <span class="truncate max-w-[120px]">${usr.name}</span>
+          </div>
+          <span class="text-[9px] px-1.5 py-0.5 rounded font-mono ${
+            usr.tier === 'PRO' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-500/20 text-slate-400'
+          }">${usr.tier}</span>
+        </button>
+      `).join('');
 
-      safeLucide();
+      lucide.createIcons();
     }
 
     function toggleUserDropdown(e) {
       e.stopPropagation();
       const menu = document.getElementById('user-dropdown-menu');
-      if (menu) menu.classList.toggle('hidden');
+      menu.classList.toggle('hidden');
     }
 
     document.addEventListener('click', (e) => {
@@ -1027,19 +1066,17 @@ model Listing {
       if (found) {
         AppState.currentUser = found;
         saveUserState();
-        const menu = document.getElementById('user-dropdown-menu');
-        if (menu) menu.classList.add('hidden');
+        document.getElementById('user-dropdown-menu').classList.add('hidden');
         renderUserNav();
         renderListings();
-        showToast(`Switched profile to ${found.name}`);
+        showToast(`Switched active profile to ${found.name}`);
       }
     }
 
     function signOutUser() {
       AppState.currentUser = null;
       saveUserState();
-      const menu = document.getElementById('user-dropdown-menu');
-      if (menu) menu.classList.add('hidden');
+      document.getElementById('user-dropdown-menu').classList.add('hidden');
       renderUserNav();
       renderListings();
       showToast('Signed out of Tech Swap');
@@ -1054,18 +1091,14 @@ model Listing {
       const btnHard = document.getElementById('nav-btn-hardware');
       const inactiveClasses = 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
       
-      if (btnAll) {
-        btnAll.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
-          (division === 'ALL' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm font-semibold' : inactiveClasses);
-      }
-      if (btnSoft) {
-        btnSoft.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
-          (division === 'SOFTWARE' ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30 font-semibold' : inactiveClasses);
-      }
-      if (btnHard) {
-        btnHard.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
-          (division === 'HARDWARE' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold' : inactiveClasses);
-      }
+      btnAll.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
+        (division === 'ALL' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm font-semibold' : inactiveClasses);
+      
+      btnSoft.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
+        (division === 'SOFTWARE' ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30 font-semibold' : inactiveClasses);
+
+      btnHard.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
+        (division === 'HARDWARE' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold' : inactiveClasses);
 
       renderCategoryPills();
       renderListings();
@@ -1073,7 +1106,6 @@ model Listing {
 
     function renderCategoryPills() {
       const container = document.getElementById('category-pills-container');
-      if (!container) return;
       const { activeDivision, selectedCategory, listings } = AppState;
 
       let pillsHTML = `
@@ -1119,7 +1151,7 @@ model Listing {
       }
 
       container.innerHTML = pillsHTML;
-      safeLucide();
+      lucide.createIcons();
     }
 
     function setCategory(cat) {
@@ -1131,19 +1163,19 @@ model Listing {
     function handleSearchChange(val) {
       AppState.searchQuery = val;
       const clearBtn = document.getElementById('clear-search-btn');
-      if (clearBtn) {
-        if (val.trim()) clearBtn.classList.remove('hidden');
-        else clearBtn.classList.add('hidden');
+      if (val.trim()) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
       }
       renderListings();
     }
 
     function clearSearch() {
       const input = document.getElementById('search-input');
-      if (input) input.value = '';
+      input.value = '';
       AppState.searchQuery = '';
-      const clearBtn = document.getElementById('clear-search-btn');
-      if (clearBtn) clearBtn.classList.add('hidden');
+      document.getElementById('clear-search-btn').classList.add('hidden');
       renderListings();
     }
 
@@ -1155,12 +1187,10 @@ model Listing {
     function toggleFeaturedOnly() {
       AppState.onlyFeatured = !AppState.onlyFeatured;
       const btn = document.getElementById('featured-toggle-btn');
-      if (btn) {
-        if (AppState.onlyFeatured) {
-          btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border transition bg-amber-500/20 text-amber-500 border-amber-500/40';
-        } else {
-          btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
-        }
+      if (AppState.onlyFeatured) {
+        btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border transition bg-amber-500/20 text-amber-500 border-amber-500/40';
+      } else {
+        btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
       }
       renderListings();
     }
@@ -1172,17 +1202,12 @@ model Listing {
       AppState.priceSort = 'DEFAULT';
       AppState.onlyFeatured = false;
 
-      const searchInput = document.getElementById('search-input');
-      if (searchInput) searchInput.value = '';
-      const clearBtn = document.getElementById('clear-search-btn');
-      if (clearBtn) clearBtn.classList.add('hidden');
-      const sortSelect = document.getElementById('sort-select');
-      if (sortSelect) sortSelect.value = 'DEFAULT';
+      document.getElementById('search-input').value = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      document.getElementById('sort-select').value = 'DEFAULT';
 
       const featBtn = document.getElementById('featured-toggle-btn');
-      if (featBtn) {
-        featBtn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
-      }
+      featBtn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
 
       setDivision('ALL');
     }
@@ -1194,26 +1219,19 @@ model Listing {
       const catalogTitle = document.getElementById('catalog-title');
       const catalogSubtitle = document.getElementById('catalog-subtitle');
 
-      if (!grid) return;
-
-      if (catalogTitle) {
-        if (AppState.activeDivision === 'ALL') {
-          catalogTitle.textContent = 'All Marketplace Listings';
-        } else if (AppState.activeDivision === 'SOFTWARE') {
-          catalogTitle.textContent = 'Part 1: Software & Digital Assets';
-        } else {
-          catalogTitle.textContent = 'Part 2: Hardware & Pre-Owned Gear';
-        }
+      if (AppState.activeDivision === 'ALL') {
+        catalogTitle.textContent = 'All Marketplace Listings';
+      } else if (AppState.activeDivision === 'SOFTWARE') {
+        catalogTitle.textContent = 'Part 1: Software & Digital Assets';
+      } else {
+        catalogTitle.textContent = 'Part 2: Hardware & Pre-Owned Gear';
       }
 
       const isFiltered = AppState.activeDivision !== 'ALL' || AppState.selectedCategory !== 'ALL' || AppState.searchQuery || AppState.onlyFeatured;
-      if (resetBtn) {
-        if (isFiltered) resetBtn.classList.remove('hidden');
-        else resetBtn.classList.add('hidden');
-      }
+      if (isFiltered) resetBtn.classList.remove('hidden');
+      else resetBtn.classList.add('hidden');
 
-      const filtered = (AppState.listings || []).filter(item => {
-        if (!item) return false;
+      const filtered = AppState.listings.filter(item => {
         if (AppState.activeDivision !== 'ALL' && item.type !== AppState.activeDivision) return false;
         if (AppState.selectedCategory !== 'ALL' && !AppState.selectedCategory.startsWith('All')) {
           if (item.category !== AppState.selectedCategory) return false;
@@ -1221,9 +1239,9 @@ model Listing {
         if (AppState.onlyFeatured && !item.isFeatured) return false;
         if (AppState.searchQuery.trim() !== '') {
           const q = AppState.searchQuery.toLowerCase();
-          const matchTitle = (item.title || '').toLowerCase().includes(q);
-          const matchDesc = (item.description || '').toLowerCase().includes(q);
-          const matchCat = (item.category || '').toLowerCase().includes(q);
+          const matchTitle = item.title.toLowerCase().includes(q);
+          const matchDesc = item.description.toLowerCase().includes(q);
+          const matchCat = item.category.toLowerCase().includes(q);
           const matchLoc = item.meetupLocation ? item.meetupLocation.toLowerCase().includes(q) : false;
           if (!matchTitle && !matchDesc && !matchCat && !matchLoc) return false;
         }
@@ -1232,31 +1250,29 @@ model Listing {
 
       filtered.sort((a, b) => {
         if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
-        if (AppState.priceSort === 'LOW_TO_HIGH') return (a.priceMMK || 0) - (b.priceMMK || 0);
-        if (AppState.priceSort === 'HIGH_TO_LOW') return (b.priceMMK || 0) - (a.priceMMK || 0);
+        if (AppState.priceSort === 'LOW_TO_HIGH') return a.priceMMK - b.priceMMK;
+        if (AppState.priceSort === 'HIGH_TO_LOW') return b.priceMMK - a.priceMMK;
         return 0;
       });
 
-      if (catalogSubtitle) {
-        catalogSubtitle.textContent = `Showing ${filtered.length} direct peer items`;
-      }
+      catalogSubtitle.textContent = `Showing ${filtered.length} direct peer items`;
 
       if (filtered.length === 0) {
         grid.innerHTML = '';
-        if (emptyState) emptyState.classList.remove('hidden');
+        emptyState.classList.remove('hidden');
         return;
       }
 
-      if (emptyState) emptyState.classList.add('hidden');
+      emptyState.classList.add('hidden');
 
       grid.innerHTML = filtered.map(item => {
-        const seller = (AppState.users || []).find(u => u.id === item.sellerId) || {
+        const seller = AppState.users.find(u => u.id === item.sellerId) || {
           name: 'Community Seller',
           avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
           isVerified: false
         };
         const isSoftware = item.type === 'SOFTWARE';
-        const usdEst = ((item.priceMMK || 0) / 3500).toFixed(1);
+        const usdEst = (item.priceMMK / 3500).toFixed(1);
 
         let badgeExtra = '';
         if (!isSoftware && item.condition) {
@@ -1274,7 +1290,7 @@ model Listing {
         return `
           <div onclick="openProductModal('${item.id}')" class="group relative flex flex-col border rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${borderFeaturedClass}">
             <div class="relative h-44 w-full bg-slate-950 overflow-hidden">
-              <img src="${item.previewUrl || ''}" alt="${item.title || ''}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+              <img src="${item.previewUrl}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
               
               ${item.isFeatured ? `
@@ -1306,17 +1322,17 @@ model Listing {
             <div class="p-4 flex-1 flex flex-col justify-between">
               <div>
                 <div class="flex items-center justify-between text-[11px] mb-1.5 text-slate-500 dark:text-slate-400">
-                  <span class="truncate max-w-[170px]">${item.category || ''}</span>
-                  <span>${item.createdAt || ''}</span>
+                  <span class="truncate max-w-[170px]">${item.category}</span>
+                  <span>${item.createdAt}</span>
                 </div>
 
                 <h3 class="font-semibold text-sm transition-colors line-clamp-2 leading-snug text-slate-900 dark:text-slate-100 group-hover:text-brand-500">
-                  ${item.title || ''}
+                  ${item.title}
                 </h3>
 
                 <div class="mt-2.5 flex items-baseline gap-2">
                   <span class="text-base font-extrabold text-slate-900 dark:text-white">
-                    ${(item.priceMMK || 0).toLocaleString()} MMK
+                    ${item.priceMMK.toLocaleString()} MMK
                   </span>
                   <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">
                     ≈ $${usdEst}
@@ -1349,7 +1365,7 @@ model Listing {
         `;
       }).join('');
 
-      safeLucide();
+      lucide.createIcons();
     }
 
     function openProductModal(id) {
@@ -1381,7 +1397,7 @@ model Listing {
 
       document.getElementById('modal-category').textContent = `${item.category} · ${item.subCategory || 'General'}`;
       document.getElementById('modal-title').textContent = item.title;
-      document.getElementById('modal-price').textContent = `${(item.priceMMK || 0).toLocaleString()} MMK`;
+      document.getElementById('modal-price').textContent = `${item.priceMMK.toLocaleString()} MMK`;
       document.getElementById('modal-desc').textContent = item.description;
 
       const specsDiv = document.getElementById('modal-specs');
@@ -1419,6 +1435,7 @@ model Listing {
       if (seller.isVerified) verBadge.classList.remove('hidden');
       else verBadge.classList.add('hidden');
 
+      // Contact or Owner Delete Control
       const actionSlot = document.getElementById('modal-action-buttons-slot');
       const isOwner = AppState.currentUser && (item.sellerId === AppState.currentUser.id || (AppState.currentUser.email && seller.email === AppState.currentUser.email));
 
@@ -1455,18 +1472,17 @@ model Listing {
       const modal = document.getElementById('product-detail-modal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
-      safeLucide();
+      lucide.createIcons();
     }
 
     function closeProductModal() {
       const modal = document.getElementById('product-detail-modal');
-      if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-      }
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
       AppState.activeProduct = null;
     }
 
+    /* Delete / Mark as Sold Function */
     function deleteListing(id) {
       const item = AppState.listings.find(x => x.id === id);
       if (!item) return;
@@ -1486,7 +1502,7 @@ model Listing {
 
     function copyProductInquiry() {
       if (!AppState.activeProduct) return;
-      const text = `Hi! I found your listing "${AppState.activeProduct.title}" (${(AppState.activeProduct.priceMMK || 0).toLocaleString()} MMK) on Tech Swap. Is it still available?`;
+      const text = `Hi! I found your listing "${AppState.activeProduct.title}" (${AppState.activeProduct.priceMMK.toLocaleString()} MMK) on Tech Swap. Is it still available?`;
       
       const textArea = document.createElement("textarea");
       textArea.value = text;
@@ -1501,128 +1517,43 @@ model Listing {
       document.body.removeChild(textArea);
     }
 
-    /* Image Upload & Mode Logic (File vs URL) */
-    function setImageInputMode(mode) {
-      AppState.imageInputMode = mode;
-      const tabFile = document.getElementById('img-tab-file');
-      const tabUrl = document.getElementById('img-tab-url');
-      const contFile = document.getElementById('img-file-container');
-      const contUrl = document.getElementById('img-url-container');
-
-      if (mode === 'FILE') {
-        tabFile.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-500/20 text-brand-600 dark:text-brand-400 border border-brand-500/40';
-        tabUrl.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200';
-        contFile.classList.remove('hidden');
-        contUrl.classList.add('hidden');
-      } else {
-        tabUrl.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-500/20 text-brand-600 dark:text-brand-400 border border-brand-500/40';
-        tabFile.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200';
-        contUrl.classList.remove('hidden');
-        contFile.classList.add('hidden');
-      }
-      safeLucide();
-    }
-
-    function handleLocalImageUpload(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      if (file.size > 2 * 1024 * 1024) {
-        showToast('ဓာတ်ပုံအရွယ်အစားသည် 2MB ထက် မကျော်လွန်ရပါ');
-        e.target.value = '';
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        AppState.selectedImageSrc = event.target.result;
-        showImagePreview(event.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function handleUrlImageInput(url) {
-      if (url.trim()) {
-        AppState.selectedImageSrc = url.trim();
-        showImagePreview(url.trim());
-      } else {
-        clearSelectedImage();
-      }
-    }
-
-    function showImagePreview(src) {
-      const box = document.getElementById('img-preview-box');
-      const tag = document.getElementById('img-preview-tag');
-      if (box && tag) {
-        tag.src = src;
-        box.classList.remove('hidden');
-      }
-    }
-
-    function clearSelectedImage() {
-      AppState.selectedImageSrc = '';
-      const box = document.getElementById('img-preview-box');
-      const tag = document.getElementById('img-preview-tag');
-      const fileInput = document.getElementById('post-file-input');
-      const urlInput = document.getElementById('post-preview-url');
-
-      if (tag) tag.src = '';
-      if (box) box.classList.add('hidden');
-      if (fileInput) fileInput.value = '';
-      if (urlInput) urlInput.value = '';
-    }
-
-    /* Post Listing Trigger Logic */
+    // Post Listing နှိပ်ချိန်တွင် Login မဝင်ရသေးပါက Sign In / Register အရင် တောင်းဆိုခြင်း
     function openCreateListingModal() {
       if (!AppState.currentUser) {
         AppState.pendingCreateListing = true;
-        showToast('ပစ္စည်းတင်ရန်အတွက် Email ဖြင့် အရင် Sign In / Sign Up လုပ်ပေးပါ');
+        showToast('ပစ္စည်းတင်ရန်အတွက် Email ဖြင့် Account အရင်ဖွင့်ပေးပါ');
         openAuthModal('SIGN_IN');
         return;
       }
 
-      const nameInput = document.getElementById('post-seller-name');
-      const emailInput = document.getElementById('post-seller-email');
-      const phoneInput = document.getElementById('post-seller-phone');
-      const tgInput = document.getElementById('post-seller-telegram');
+      document.getElementById('post-seller-name').value = AppState.currentUser.name || '';
+      document.getElementById('post-seller-email').value = AppState.currentUser.email || '';
+      document.getElementById('post-seller-phone').value = AppState.currentUser.phoneNumber || '';
+      document.getElementById('post-seller-telegram').value = AppState.currentUser.telegramHandle || '';
 
-      if (nameInput) nameInput.value = AppState.currentUser.name || '';
-      if (emailInput) emailInput.value = AppState.currentUser.email || '';
-      if (phoneInput) phoneInput.value = AppState.currentUser.phoneNumber || '';
-      if (tgInput) tgInput.value = AppState.currentUser.telegramHandle || '';
-
-      clearSelectedImage();
-      setImageInputMode('FILE');
       populatePostCategorySelect();
-
       const modal = document.getElementById('create-listing-modal');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-      }
-      safeLucide();
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
     }
 
     function closeCreateListingModal() {
       const modal = document.getElementById('create-listing-modal');
-      if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-      }
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
     }
 
     function selectListingPlan(plan) {
       AppState.selectedPlan = plan;
       const cardFree = document.getElementById('plan-card-freemium');
       const cardPrem = document.getElementById('plan-card-premium');
-      if (cardFree && cardPrem) {
-        if (plan === 'FREEMIUM') {
-          cardFree.className = 'cursor-pointer p-3.5 rounded-xl border-2 border-brand-500 bg-brand-500/10 transition shadow-sm';
-          cardPrem.className = 'cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition';
-        } else {
-          cardPrem.className = 'cursor-pointer p-3.5 rounded-xl border-2 border-amber-500 bg-amber-500/10 transition shadow-sm';
-          cardFree.className = 'cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition';
-        }
+      if (plan === 'FREEMIUM') {
+        cardFree.className = 'cursor-pointer p-3.5 rounded-xl border-2 border-brand-500 bg-brand-500/10 transition shadow-sm';
+        cardPrem.className = 'cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition';
+      } else {
+        cardPrem.className = 'cursor-pointer p-3.5 rounded-xl border-2 border-amber-500 bg-amber-500/10 transition shadow-sm';
+        cardFree.className = 'cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition';
       }
     }
 
@@ -1634,15 +1565,15 @@ model Listing {
       const hardFields = document.getElementById('post-hardware-fields');
 
       if (type === 'SOFTWARE') {
-        if (btnSoft) btnSoft.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 shadow-sm';
-        if (btnHard) btnHard.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
-        if (softFields) softFields.classList.remove('hidden');
-        if (hardFields) hardFields.classList.add('hidden');
+        btnSoft.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 shadow-sm';
+        btnHard.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+        softFields.classList.remove('hidden');
+        hardFields.classList.add('hidden');
       } else {
-        if (btnHard) btnHard.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-indigo-500/20 border-indigo-500 text-indigo-400 shadow-sm';
-        if (btnSoft) btnSoft.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
-        if (hardFields) hardFields.classList.remove('hidden');
-        if (softFields) softFields.classList.add('hidden');
+        btnHard.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-indigo-500/20 border-indigo-500 text-indigo-400 shadow-sm';
+        btnSoft.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+        hardFields.classList.remove('hidden');
+        softFields.classList.add('hidden');
       }
 
       populatePostCategorySelect();
@@ -1650,7 +1581,6 @@ model Listing {
 
     function populatePostCategorySelect() {
       const select = document.getElementById('post-category');
-      if (!select) return;
       const list = AppState.currentPostType === 'SOFTWARE' ? CATEGORIES_DATA.SOFTWARE.slice(1) : CATEGORIES_DATA.HARDWARE.slice(1);
       select.innerHTML = list.map(c => `<option value="${c}">${c}</option>`).join('');
     }
@@ -1695,9 +1625,7 @@ model Listing {
       const category = document.getElementById('post-category').value;
       const subCategory = document.getElementById('post-subcategory').value.trim();
       const description = document.getElementById('post-desc').value.trim();
-
-      // ပုံ preview ရွေးချယ်မှု (File Upload သို့မဟုတ် URL)
-      const previewUrl = AppState.selectedImageSrc || 
+      const previewUrl = document.getElementById('post-preview-url').value.trim() || 
         (AppState.currentPostType === 'SOFTWARE' 
           ? 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80' 
           : 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80');
@@ -1734,7 +1662,6 @@ model Listing {
 
       closeCreateListingModal();
       document.getElementById('create-listing-form').reset();
-      clearSelectedImage();
       renderUserNav();
       renderListings();
       renderCategoryPills();
@@ -1745,19 +1672,15 @@ model Listing {
       switchAuthTab(initialTab);
       renderDemoUsersList();
       const modal = document.getElementById('auth-modal');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-      }
-      safeLucide();
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
     }
 
     function closeAuthModal() {
       const modal = document.getElementById('auth-modal');
-      if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-      }
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
     }
 
     function switchAuthTab(tab) {
@@ -1768,31 +1691,22 @@ model Listing {
       const title = document.getElementById('auth-modal-title');
 
       if (tab === 'SIGN_IN') {
-        if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
-        if (tabSignUp) tabSignUp.className = 'py-2 rounded-xl transition text-slate-400 hover:text-slate-600';
-        if (viewSignIn) viewSignIn.classList.remove('hidden');
-        if (viewSignUp) viewSignUp.classList.add('hidden');
-        if (title) title.textContent = 'Sign In to Tech Swap';
+        tabSignIn.className = 'py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
+        tabSignUp.className = 'py-2 rounded-xl transition text-slate-400 hover:text-slate-600';
+        viewSignIn.classList.remove('hidden');
+        viewSignUp.classList.add('hidden');
+        title.textContent = 'Sign In to Tech Swap';
       } else {
-        if (tabSignUp) tabSignUp.className = 'py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
-        if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl transition text-slate-400 hover:text-slate-600';
-        if (viewSignUp) viewSignUp.classList.remove('hidden');
-        if (viewSignIn) viewSignIn.classList.add('hidden');
-        if (title) title.textContent = 'Create Free Account';
+        tabSignUp.className = 'py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
+        tabSignIn.className = 'py-2 rounded-xl transition text-slate-400 hover:text-slate-600';
+        viewSignUp.classList.remove('hidden');
+        viewSignIn.classList.add('hidden');
+        title.textContent = 'Create Free Account';
       }
     }
 
     function renderDemoUsersList() {
-      const wrapper = document.getElementById('demo-users-wrapper');
       const list = document.getElementById('demo-users-list');
-      if (!list || !wrapper) return;
-
-      if (AppState.users.length === 0) {
-        wrapper.classList.add('hidden');
-        return;
-      }
-
-      wrapper.classList.remove('hidden');
       list.innerHTML = AppState.users.map(u => `
         <button type="button" onclick="selectDemoUser('${u.id}')" class="w-full flex items-center justify-between p-2 rounded-xl border text-left transition bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800">
           <div class="flex items-center gap-2">
@@ -1857,11 +1771,11 @@ model Listing {
       const btnFree = document.getElementById('tier-btn-free');
       const btnPro = document.getElementById('tier-btn-pro');
       if (tier === 'FREE') {
-        if (btnFree) btnFree.className = 'py-2 px-3 rounded-xl border text-center transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 font-bold';
-        if (btnPro) btnPro.className = 'py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+        btnFree.className = 'py-2 px-3 rounded-xl border text-center transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 font-bold';
+        btnPro.className = 'py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
       } else {
-        if (btnPro) btnPro.className = 'py-2 px-3 rounded-xl border text-center transition bg-indigo-500/20 border-indigo-500 text-indigo-500 font-bold';
-        if (btnFree) btnFree.className = 'py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+        btnPro.className = 'py-2 px-3 rounded-xl border text-center transition bg-indigo-500/20 border-indigo-500 text-indigo-500 font-bold';
+        btnFree.className = 'py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
       }
     }
 
@@ -1903,23 +1817,18 @@ model Listing {
     }
 
     function openSchemaModal() {
-      const codeBlock = document.getElementById('prisma-code-block');
-      if (codeBlock) codeBlock.textContent = PRISMA_SCHEMA_CODE;
+      document.getElementById('prisma-code-block').textContent = PRISMA_SCHEMA_CODE;
       setSchemaTab('PRISMA');
       const modal = document.getElementById('schema-modal');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-      }
-      safeLucide();
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
     }
 
     function closeSchemaModal() {
       const modal = document.getElementById('schema-modal');
-      if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-      }
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
     }
 
     function setSchemaTab(tab) {
@@ -1929,15 +1838,15 @@ model Listing {
       const viewP2p = document.getElementById('schema-view-p2p');
 
       if (tab === 'PRISMA') {
-        if (tabPrisma) tabPrisma.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white';
-        if (tabP2p) tabP2p.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition';
-        if (viewPrisma) viewPrisma.classList.remove('hidden');
-        if (viewP2p) viewP2p.classList.add('hidden');
+        tabPrisma.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white';
+        tabP2p.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition';
+        viewPrisma.classList.remove('hidden');
+        viewP2p.classList.add('hidden');
       } else {
-        if (tabP2p) tabP2p.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white';
-        if (tabPrisma) tabPrisma.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition';
-        if (viewP2p) viewP2p.classList.remove('hidden');
-        if (viewPrisma) viewPrisma.classList.add('hidden');
+        tabP2p.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white';
+        tabPrisma.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition';
+        viewP2p.classList.remove('hidden');
+        viewPrisma.classList.add('hidden');
       }
     }
 
@@ -1956,15 +1865,11 @@ model Listing {
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      try {
-        applyTheme();
-        renderUserNav();
-        renderCategoryPills();
-        renderListings();
-        safeLucide();
-      } catch (err) {
-        console.error('Initialization error:', err);
-      }
+      applyTheme();
+      renderUserNav();
+      renderCategoryPills();
+      renderListings();
+      lucide.createIcons();
     });
   </script>
 </body>
