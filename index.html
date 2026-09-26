@@ -1,27 +1,667 @@
-<!-- Firebase Cloud Integration Script -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-      getFirestore, 
-      collection, 
-      addDoc, 
-      deleteDoc, 
-      doc, 
-      onSnapshot, 
-      query, 
-      orderBy,
-      serverTimestamp 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechSwap — Direct P2P Tech Marketplace (Myanmar)</title>
+  
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857'
+            }
+          }
+        }
+      }
+    }
+  </script>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCyR7uTtlrpTMsDUS_59uVu3UbyvMybfTY",
-      authDomain: "my-own-website-bb4e9.firebaseapp.com",
-      projectId: "my-own-website-bb4e9",
-      storageBucket: "my-own-website-bb4e9.firebasestorage.app",
-      messagingSenderId: "35886139510",
-      appId: "1:35886139510:web:9a1c78e894f7f6e98a3757"
-    };
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.25);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans transition-colors duration-200 antialiased selection:bg-brand-500 selection:text-white">
+
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-white/90 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        
+        <!-- Logo & Brand -->
+        <div class="flex items-center gap-3 cursor-pointer" onclick="resetAllFilters()">
+          <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
+            <i data-lucide="refresh-cw" class="w-5 h-5 text-white"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-lg sm:text-xl tracking-tight text-slate-900 dark:text-white">
+                Tech<span class="text-brand-500">Swap</span>
+              </span>
+              <span class="hidden sm:inline-block text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-500 border border-brand-500/20">
+                P2P Direct
+              </span>
+            </div>
+            <p class="text-[11px] hidden sm:block text-slate-500 dark:text-slate-400">
+              0% Platform Fee · Direct Telegram & Meetup
+            </p>
+          </div>
+        </div>
+
+        <!-- Division Switcher Tabs -->
+        <nav class="hidden md:flex items-center p-1 rounded-xl border bg-slate-100 dark:bg-slate-950 border-slate-200 dark:border-slate-800" aria-label="Division Selector">
+          <button id="nav-btn-all" onclick="setDivision('ALL')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-sm bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400">
+            All Gear
+          </button>
+          <button id="nav-btn-software" onclick="setDivision('SOFTWARE')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+            <i data-lucide="code-2" class="w-3.5 h-3.5 text-brand-500"></i>
+            Part 1: Software
+          </button>
+          <button id="nav-btn-hardware" onclick="setDivision('HARDWARE')" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
+            <i data-lucide="laptop" class="w-3.5 h-3.5 text-indigo-500"></i>
+            Part 2: Hardware
+          </button>
+        </nav>
+
+        <!-- Right Utilities & User Bar -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Light/Dark Toggle -->
+          <button id="theme-toggle-btn" onclick="toggleTheme()" class="p-2 rounded-xl border bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-amber-400 border-slate-200 dark:border-slate-700 transition-all" aria-label="Toggle Theme">
+            <i id="theme-icon" data-lucide="sun" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Database Architecture Modal Trigger -->
+          <button onclick="openSchemaModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs rounded-xl border bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 transition" title="View Database Architecture & Prisma Schema">
+            <i data-lucide="database" class="w-3.5 h-3.5 text-indigo-500"></i>
+            <span class="hidden lg:inline font-medium">Schema / DB</span>
+          </button>
+
+          <!-- User Profile & Dropdown -->
+          <div class="relative" id="user-menu-wrapper">
+            <div id="user-profile-button-slot"></div>
+            <!-- Dropdown Menu -->
+            <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-72 border rounded-2xl shadow-2xl p-2 z-50 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+              <div class="flex items-center justify-between px-2 py-1.5 border-b mb-1.5 border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400">
+                <span class="text-[11px] font-semibold uppercase tracking-wider">Active Account</span>
+                <button onclick="openAuthModal('SIGN_UP')" class="text-[11px] font-medium text-brand-500 hover:underline flex items-center gap-1">
+                  <i data-lucide="user-plus" class="w-3 h-3"></i>+ New
+                </button>
+              </div>
+              <div id="active-user-badge" class="px-2 py-2 mb-2 rounded-xl bg-brand-500/10 border border-brand-500/20"></div>
+              
+              <div class="text-[10px] px-2 py-0.5 font-semibold uppercase text-slate-500 dark:text-slate-400">Saved Local Accounts</div>
+              <div id="user-switch-list" class="max-h-44 overflow-y-auto space-y-1 my-1"></div>
+
+              <div class="border-t border-slate-100 dark:border-slate-800 mt-2 pt-2 px-1">
+                <button onclick="signOutUser()" class="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-rose-500 dark:text-rose-400 hover:bg-rose-500/10 font-medium text-xs transition">
+                  <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Post Listing Button -->
+          <button onclick="openCreateListingModal()" class="flex items-center gap-1.5 bg-gradient-to-r from-brand-500 to-teal-600 hover:from-brand-400 hover:to-teal-500 text-slate-950 font-bold px-3.5 py-1.5 rounded-xl text-xs shadow-md shadow-brand-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <i data-lucide="plus" class="w-4 h-4 stroke-[2.5]"></i>
+            <span class="hidden sm:inline">Post a Listing</span>
+            <span class="sm:hidden">Post</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="relative overflow-hidden border-b border-slate-200 dark:border-slate-800 bg-gradient-to-b from-brand-50/40 via-white to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 transition-colors">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.12),rgba(255,255,255,0))] pointer-events-none"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+      <div class="text-center max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-600 dark:text-brand-400 text-xs font-semibold mb-4">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          Direct Peer-to-Peer Tech Exchange · Zero Platform Fees
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight leading-tight text-slate-900 dark:text-white">
+          Direct Peer Tech Deals, 
+          <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-500 via-teal-500 to-indigo-500">
+            Verified & In-Person
+          </span>
+        </h1>
+        <p class="mt-4 text-sm sm:text-base leading-relaxed text-slate-600 dark:text-slate-300">
+          No middleman commission. Connect directly with students, developers, and techies in Myanmar via Telegram, Viber, or Phone Call. Download digital boilerplates instantly or test laptops in person before paying.
+        </p>
+
+        <!-- Safety Notice Pill -->
+        <div class="mt-6 inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs border bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300">
+          <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 text-amber-500"></i>
+          <span>
+            <strong>Safety Protocol:</strong> Meet in public spaces (e.g., Hledan Center, MICT Park) & inspect hardware thoroughly. Never wire advance bank deposits.
+          </span>
+        </div>
+      </div>
+
+      <!-- Quick Search & Controls Bar -->
+      <div class="mt-8 max-w-4xl mx-auto border p-3 rounded-2xl shadow-xl flex flex-col md:flex-row items-center gap-3 transition-colors bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 shadow-slate-200/50 dark:shadow-black/50">
+        <div class="relative w-full flex-1">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          <input
+            id="search-input"
+            type="text"
+            oninput="handleSearchChange(this.value)"
+            placeholder="Search MacBook, Notion workspace, Anker charger, Python notes..."
+            class="w-full rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950/80 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500"
+          />
+          <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <select
+            id="sort-select"
+            onchange="handleSortChange(this.value)"
+            class="border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-brand-500 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+          >
+            <option value="DEFAULT">Sort: Featured First</option>
+            <option value="LOW_TO_HIGH">Price: Low to High</option>
+            <option value="HIGH_TO_LOW">Price: High to Low</option>
+          </select>
+
+          <button
+            id="featured-toggle-btn"
+            onclick="toggleFeaturedOnly()"
+            class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200"
+          >
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
+            Featured
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Category Filter Pills -->
+      <div id="category-pills-container" class="mt-6 flex flex-wrap items-center justify-center gap-2"></div>
+    </div>
+  </section>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 id="catalog-title" class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+          All Marketplace Listings
+        </h2>
+        <p id="catalog-subtitle" class="text-xs mt-0.5 text-slate-500 dark:text-slate-400">
+          Showing peer-to-peer items
+        </p>
+      </div>
+
+      <button id="reset-filters-btn" onclick="resetAllFilters()" class="hidden text-xs text-slate-400 hover:text-brand-500 flex items-center gap-1 underline underline-offset-4">
+        Reset filters
+      </button>
+    </div>
+
+    <!-- Product Cards Grid -->
+    <div id="listings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden text-center py-20 border rounded-2xl p-8 bg-white dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 shadow-sm">
+      <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+        <i data-lucide="search" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200">No matching listings found</h3>
+      <p class="text-xs mt-1 max-w-sm mx-auto text-slate-500 dark:text-slate-400">
+        Try adjusting your search query or switch categories to explore other peer items.
+      </p>
+    </div>
+  </main>
+
+  <!-- Product Detail Modal (Contains Delete Button for the Owner) -->
+  <div id="product-detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto border rounded-2xl shadow-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100">
+      <div class="sticky top-0 z-20 flex items-center justify-between px-5 py-3.5 backdrop-blur border-b bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800">
+        <div class="flex items-center gap-2">
+          <span id="modal-type-badge" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"></span>
+          <span id="modal-item-id" class="text-xs text-slate-400 font-mono"></span>
+        </div>
+        <button onclick="closeProductModal()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 sm:p-6 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div class="relative rounded-xl overflow-hidden bg-slate-950 border border-slate-800 aspect-video md:aspect-square">
+            <img id="modal-img" src="" alt="" class="w-full h-full object-cover">
+            <div id="modal-featured-badge" class="hidden absolute top-3 left-3 flex items-center gap-1 bg-amber-500 text-slate-950 font-bold text-[10px] px-2 py-0.5 rounded shadow">
+              <i data-lucide="sparkles" class="w-3 h-3 fill-slate-950"></i> Featured Item
+            </div>
+          </div>
+
+          <div class="flex flex-col justify-between">
+            <div>
+              <div id="modal-category" class="text-xs text-slate-400 font-medium mb-1"></div>
+              <h2 id="modal-title" class="text-lg sm:text-xl font-bold leading-snug text-slate-900 dark:text-white"></h2>
+
+              <div class="mt-3 py-2 px-3 rounded-xl border inline-block bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                <div class="text-[10px] uppercase font-mono text-slate-400">Direct Asking Price</div>
+                <div id="modal-price" class="text-2xl font-black text-brand-500"></div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400">Zero platform fees · Direct Cash or KPay upon meetup</div>
+              </div>
+
+              <p id="modal-desc" class="mt-4 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300"></p>
+            </div>
+
+            <!-- Dynamic Specifics -->
+            <div id="modal-specs" class="mt-4 space-y-2 text-xs"></div>
+          </div>
+        </div>
+
+        <!-- Inspection Advisory Warning -->
+        <div class="p-4 rounded-xl border flex items-start gap-3 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30">
+          <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5"></i>
+          <div class="text-xs leading-relaxed text-amber-800 dark:text-amber-200/90">
+            <span class="font-bold">Meetup Inspection Advisory:</span> For hardware, always test device functionality, cameras, displays, and accounts in a bright public area (coffee shops, shopping centers). For software assets, request a brief screenshare verification before paying.
+          </div>
+        </div>
+
+        <!-- Seller Contact Box -->
+        <div class="p-5 rounded-2xl border space-y-4 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <img id="modal-seller-avatar" src="" alt="" class="w-11 h-11 rounded-full object-cover ring-2 ring-brand-500">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span id="modal-seller-name" class="font-bold text-sm text-slate-900 dark:text-white"></span>
+                  <span id="modal-seller-verified" class="hidden flex items-center gap-0.5 text-[10px] font-semibold text-brand-500 bg-brand-500/10 px-1.5 py-0.5 rounded border border-brand-500/20">
+                    <i data-lucide="shield-check" class="w-3 h-3"></i> Verified Seller
+                  </span>
+                </div>
+                <div class="text-[11px] text-slate-400">Usually responds quickly · Direct P2P contact</div>
+              </div>
+            </div>
+
+            <button onclick="copyProductInquiry()" class="flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl border bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 shadow-sm transition">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Copy Message</span>
+            </button>
+          </div>
+
+          <!-- Direct Communication Channels or Owner Controls -->
+          <div id="modal-action-buttons-slot" class="pt-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Listing Modal -->
+  <div id="create-listing-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto border rounded-2xl shadow-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100">
+      <div class="sticky top-0 z-20 flex items-center justify-between px-5 py-4 backdrop-blur border-b bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 class="font-bold text-base text-slate-900 dark:text-white">Create New Tech Swap Listing</h3>
+          <p class="text-xs text-slate-400">Post directly to buyers in Myanmar with zero cuts</p>
+        </div>
+        <button onclick="closeCreateListingModal()" class="p-1 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Create Form -->
+      <form id="create-listing-form" onsubmit="handleFormSubmitListing(event)" class="p-5 sm:p-6 space-y-5 text-xs">
+        
+        <!-- Seller Identity Info (Email & Name) -->
+        <div class="p-4 rounded-xl border border-brand-500/30 bg-brand-50/40 dark:bg-brand-500/5 space-y-3">
+          <div class="font-bold text-xs text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
+            <i data-lucide="user-check" class="w-4 h-4"></i> Seller Information (ရောင်းချသူအချက်အလက်)
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Customer Name (အမည်) *</label>
+              <input type="text" id="post-seller-name" required placeholder="e.g. Ko Khant" class="w-full rounded-xl px-3 py-2 border bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Customer Email *</label>
+              <input type="email" id="post-seller-email" required placeholder="khant@example.com" class="w-full rounded-xl px-3 py-2 border bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Phone Number / Viber *</label>
+              <input type="tel" id="post-seller-phone" required placeholder="09xxxxxxxxx" class="w-full rounded-xl px-3 py-2 border bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Telegram Handle (Optional)</label>
+              <input type="text" id="post-seller-telegram" placeholder="without @" class="w-full rounded-xl px-3 py-2 border bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white focus:outline-none focus:border-brand-500 transition">
+            </div>
+          </div>
+        </div>
+
+        <!-- Plan Selection (Freemium vs Premium) -->
+        <div>
+          <label class="block font-semibold mb-2 text-slate-700 dark:text-slate-300">Choose Listing Plan (အစီအစဉ်ရွေးချယ်ပါ) *</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div id="plan-card-freemium" onclick="selectListingPlan('FREEMIUM')" class="cursor-pointer p-3.5 rounded-xl border-2 border-brand-500 bg-brand-500/10 transition shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-brand-600 dark:text-brand-400 flex items-center gap-1.5">
+                  <i data-lucide="badge-check" class="w-4 h-4"></i> Freemium Plan
+                </span>
+                <span class="text-[10px] font-mono font-bold bg-brand-500 text-slate-950 px-2 py-0.5 rounded">Free</span>
+              </div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Direct peer listing. Standard visibility with 0% platform take.</p>
+            </div>
+            <div id="plan-card-premium" onclick="selectListingPlan('PREMIUM')" class="cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-amber-500 flex items-center gap-1.5">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5 fill-amber-500"></i> Premium Pro
+                </span>
+                <span class="text-[10px] font-mono font-bold bg-amber-500 text-slate-950 px-2 py-0.5 rounded">Featured</span>
+              </div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Priority pinned feed ranking, golden badge & verified glow.</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-2 text-slate-700 dark:text-slate-300">Marketplace Division *</label>
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" id="post-tab-software" onclick="setPostType('SOFTWARE')" class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 shadow-sm">
+              <i data-lucide="code-2" class="w-4 h-4 text-brand-500"></i>
+              <span>Part 1: Software & Digital Assets</span>
+            </button>
+            <button type="button" id="post-tab-hardware" onclick="setPostType('HARDWARE')" class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+              <i data-lucide="laptop" class="w-4 h-4 text-indigo-500"></i>
+              <span>Part 2: Hardware & Electronics</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Listing Title *</label>
+            <input type="text" id="post-title" required placeholder="e.g. Next.js 15 Fullstack SaaS Template" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Price (MMK) *</label>
+            <input type="number" id="post-price" required placeholder="50000" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Category *</label>
+            <select id="post-category" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200"></select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Sub-category / Tag</label>
+            <input type="text" id="post-subcategory" placeholder="e.g. Notion, React, Figma" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          </div>
+        </div>
+
+        <!-- Conditional Software Fields -->
+        <div id="post-software-fields" class="p-4 rounded-xl border space-y-3 bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800">
+          <div class="font-semibold text-brand-600 dark:text-brand-400">Digital Asset Delivery Info</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Asset Type *</label>
+              <select id="post-digital-type" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+                <option value="STUDY_PACK">Curated Study Pack</option>
+                <option value="NOTION_TEMPLATE">Notion Template</option>
+                <option value="CODE_BOILERPLATE">Code Boilerplate / Starter</option>
+                <option value="GITHUB_INVITE">GitHub Repo Invite</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">File Format / Access *</label>
+              <input type="text" id="post-file-format" placeholder="e.g. PDF + Notion Link or ZIP file" value="PDF + Notion Link" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+            </div>
+          </div>
+        </div>
+
+        <!-- Conditional Hardware Fields -->
+        <div id="post-hardware-fields" class="hidden p-4 rounded-xl border space-y-3 bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800">
+          <div class="font-semibold text-indigo-400">Hardware Specifications</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Device Condition *</label>
+              <select id="post-condition" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-indigo-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+                <option value="LIKE_NEW">Like New (Mint / Unboxed)</option>
+                <option value="EXCELLENT_90_PLUS">90%+ Clean (Minor wear)</option>
+                <option value="GOOD_FAIR">Good / Fair Condition</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Battery Health % (Optional)</label>
+              <input type="number" id="post-battery" min="1" max="100" placeholder="e.g. 88" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-indigo-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+            </div>
+          </div>
+          <div>
+            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Safe Public Meetup Location *</label>
+            <input type="text" id="post-location" placeholder="e.g. Hledan Center, MICT Park, Junction Square" value="Hledan Center / Kamayut, Yangon" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-indigo-500 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Detailed Description *</label>
+          <textarea id="post-desc" required rows="3" placeholder="Describe condition, specifications, bundled accessories, or digital asset details..." class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Photo / Thumbnail Image URL</label>
+          <input type="url" id="post-preview-url" placeholder="https://images.unsplash.com/... (Leave empty for default cover)" class="w-full rounded-xl px-3 py-2.5 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="closeCreateListingModal()" class="px-4 py-2 rounded-xl font-medium transition bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold transition shadow-lg shadow-brand-500/20">
+            Publish Listing
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Sign In / Register Modal -->
+  <div id="auth-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="relative w-full max-w-md border rounded-2xl shadow-2xl overflow-hidden bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100">
+      <div class="flex items-center justify-between px-5 py-4 border-b bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-2">
+          <div class="p-1.5 rounded-lg bg-brand-500/10 text-brand-500">
+            <i data-lucide="log-in" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 id="auth-modal-title" class="font-bold text-sm text-slate-900 dark:text-white">Sign In to Tech Swap</h3>
+            <p class="text-[11px] text-slate-400">Direct peer communication & listings</p>
+          </div>
+        </div>
+        <button onclick="closeAuthModal()" class="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Auth Tab Header -->
+      <div class="grid grid-cols-2 p-1 border-b text-xs font-semibold border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60">
+        <button id="auth-tab-signin" onclick="switchAuthTab('SIGN_IN')" class="py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm">
+          Sign In with Email
+        </button>
+        <button id="auth-tab-signup" onclick="switchAuthTab('SIGN_UP')" class="py-2 rounded-xl transition text-slate-400 hover:text-slate-600">
+          Register / Sign Up
+        </button>
+      </div>
+
+      <!-- Sign In View -->
+      <div id="auth-signin-view" class="p-5 space-y-4 text-xs">
+        <form onsubmit="handleEmailSignIn(event)" class="space-y-3">
+          <div>
+            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Email Address *</label>
+            <div class="relative">
+              <i data-lucide="mail" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="email" id="auth-signin-email" required placeholder="khant@developer.mm" class="w-full rounded-xl pl-9 pr-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+            </div>
+          </div>
+          <button type="submit" class="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold transition shadow-lg shadow-brand-500/20">
+            Sign In
+          </button>
+        </form>
+
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div class="text-[11px] font-semibold text-slate-400 mb-2">Or One-Click Demo Sign In:</div>
+          <div id="demo-users-list" class="space-y-1.5"></div>
+        </div>
+      </div>
+
+      <!-- Sign Up View -->
+      <form id="auth-signup-view" onsubmit="handleUserSignUp(event)" class="hidden p-5 space-y-3 text-xs">
+        <div>
+          <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Full Name *</label>
+          <input type="text" id="reg-name" required placeholder="e.g. Ko Phyo Win" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Email *</label>
+            <input type="email" id="reg-email" required placeholder="phyo@code.mm" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          </div>
+          <div>
+            <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Telegram *</label>
+            <input type="text" id="reg-telegram" required placeholder="e.g. phyo_tech" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+          </div>
+        </div>
+        <div>
+          <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Phone Number *</label>
+          <input type="tel" id="reg-phone" required placeholder="09xxxxxxxxx" class="w-full rounded-xl px-3 py-2 border focus:outline-none focus:border-brand-500 transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100">
+        </div>
+        <div>
+          <label class="block font-medium mb-1 text-slate-700 dark:text-slate-300">Seller Tier</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="tier-btn-free" onclick="setRegTier('FREE')" class="py-2 px-3 rounded-xl border text-center transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 font-bold">
+              Free Tier
+            </button>
+            <button type="button" id="tier-btn-pro" onclick="setRegTier('PRO')" class="py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+              Verified Pro
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="closeAuthModal()" class="px-4 py-2 rounded-xl transition bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold transition shadow-lg shadow-brand-500/20">
+            Register & Sign In
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Schema Modal -->
+  <div id="schema-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+    <div class="relative w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border rounded-2xl shadow-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-500">
+            <i data-lucide="database" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-slate-900 dark:text-white">System Architecture & Database Schema</h3>
+            <p class="text-xs text-slate-400">Prisma ORM with PostgreSQL for Peer-to-Peer Directory</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="schema-tab-prisma" onclick="setSchemaTab('PRISMA')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white">
+            schema.prisma
+          </button>
+          <button id="schema-tab-p2p" onclick="setSchemaTab('P2P')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition">
+            P2P Protocol Notes
+          </button>
+          <button onclick="closeSchemaModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 transition ml-2">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-6 overflow-y-auto flex-1 text-xs">
+        <div id="schema-view-prisma" class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 font-mono text-[11px]">prisma/schema.prisma</span>
+            <button onclick="copyPrismaSchema()" class="flex items-center gap-1.5 px-3 py-1 rounded transition bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Copy Prisma Schema</span>
+            </button>
+          </div>
+          <pre id="prisma-code-block" class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-brand-400 font-mono text-xs overflow-x-auto leading-relaxed selection:bg-slate-800"></pre>
+        </div>
+
+        <div id="schema-view-p2p" class="hidden space-y-5 leading-relaxed text-slate-700 dark:text-slate-300">
+          <div class="p-4 rounded-xl border space-y-2 bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+            <h4 class="font-bold text-sm flex items-center gap-2 text-slate-900 dark:text-white">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-brand-500"></i>
+              Zero Platform Checkout Architecture
+            </h4>
+            <p>Direct seller contact handles (Telegram, Viber, Call) are bound to each listing.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="border-t py-10 mt-16 text-xs transition-colors border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="h-7 w-7 rounded-lg bg-brand-500/20 text-brand-500 flex items-center justify-center">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </div>
+        <div>
+          <span class="font-bold text-slate-900 dark:text-white">Tech Swap</span> — Myanmar's Direct Peer-to-Peer Tech Directory
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <span>Direct Telegram & Viber Meetups</span>
+        <span>No Transaction Cut</span>
+        <button onclick="openSchemaModal()" class="text-brand-500 hover:underline">
+          Prisma / PostgreSQL Architecture
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Logic with Safe Storage & Error Boundaries -->
+  <script>
     const PRISMA_SCHEMA_CODE = `// prisma/schema.prisma
 
 datasource db {
@@ -71,10 +711,6 @@ model Listing {
   createdAt      DateTime           @default(now())
 };`;
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const listingsCol = collection(db, "listings");
-
     const CATEGORIES_DATA = {
       SOFTWARE: [
         'All Software',
@@ -92,16 +728,203 @@ model Listing {
       ]
     };
 
-    const INITIAL_USERS = [];
+    const INITIAL_USERS = [
+      {
+        id: 'usr_1',
+        name: 'Aung Kyaw Thu',
+        email: 'aung@developer.mm',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+        tier: 'PRO',
+        isVerified: true,
+        telegramHandle: 'aung_dev',
+        viberNumber: '+959976543210',
+        phoneNumber: '09976543210',
+        township: 'Hledan, Kamayut',
+        bio: 'Fullstack Next.js developer & tech gear enthusiast'
+      },
+      {
+        id: 'usr_2',
+        name: 'May Thet Htar',
+        email: 'may@student.edu.mm',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+        tier: 'FREE',
+        isVerified: false,
+        telegramHandle: 'may_tech',
+        viberNumber: '+959798765432',
+        phoneNumber: '09798765432',
+        township: 'Sanchaung, Yangon',
+        bio: 'CS Student specializing in Data Science & UI'
+      },
+      {
+        id: 'usr_3',
+        name: 'Min Khant',
+        email: 'minkhant@code.io',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+        tier: 'PRO',
+        isVerified: true,
+        telegramHandle: 'minkhant_cs',
+        viberNumber: '+959450011223',
+        phoneNumber: '09450011223',
+        township: 'MICT Park, Hlaing',
+        bio: 'Hardware tinkerer & competitive programmer'
+      }
+    ];
 
-    const savedUsers = localStorage.getItem('techswap_users');
-    const savedCurrentUserId = localStorage.getItem('techswap_current_user_id');
+    const INITIAL_LISTINGS = [
+      {
+        id: 'list_1',
+        title: 'All-in-One Computer Science Cheat Sheet Bundle',
+        description: 'Concise high-yield revision sheets for Git, Python 3.12, SQL syntax, and Modern C++. Perfect for exam preps and technical interviews.',
+        priceMMK: 5000,
+        type: 'SOFTWARE',
+        category: 'Curated Study Packs',
+        subCategory: 'Cheat Sheets',
+        previewUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80',
+        isFeatured: true,
+        plan: 'PREMIUM',
+        digitalType: 'STUDY_PACK',
+        fileFormat: 'PDF + Notion Document',
+        sellerId: 'usr_2',
+        createdAt: '2 hours ago',
+        contactTelegram: 'may_tech',
+        contactViber: '+959798765432',
+        contactPhone: '09798765432'
+      },
+      {
+        id: 'list_2',
+        title: 'Minimalist Notion Academic & Goal Workspace 2026',
+        description: 'Fully automated student dashboard with GPA calculator, exam calendar, assignment tracker, and spaced repetition flashcard database.',
+        priceMMK: 10000,
+        type: 'SOFTWARE',
+        category: 'Digital Templates & Tools',
+        subCategory: 'Notion Dashboards',
+        previewUrl: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=800&q=80',
+        isFeatured: false,
+        plan: 'FREEMIUM',
+        digitalType: 'NOTION_TEMPLATE',
+        fileFormat: 'Instant Notion Duplicate Link',
+        sellerId: 'usr_2',
+        createdAt: '5 hours ago',
+        contactTelegram: 'may_tech',
+        contactViber: '+959798765432',
+        contactPhone: '09798765432'
+      },
+      {
+        id: 'list_3',
+        title: 'Fullstack Next.js 15 + Tailwind CSS + Prisma Boilerplate',
+        description: 'Production-ready starter repository configured with Auth, responsive dashboard layouts, dark mode, Stripe/KPay mockup hooks, and Docker Compose.',
+        priceMMK: 15000,
+        type: 'SOFTWARE',
+        category: 'Code Snippets & Starter Projects',
+        subCategory: 'Boilerplates & Starter Kits',
+        previewUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
+        isFeatured: true,
+        plan: 'PREMIUM',
+        digitalType: 'CODE_BOILERPLATE',
+        fileFormat: 'Private GitHub Repo Invite + Zip',
+        sellerId: 'usr_1',
+        createdAt: 'Yesterday',
+        contactTelegram: 'aung_dev',
+        contactViber: '+959976543210',
+        contactPhone: '09976543210'
+      },
+      {
+        id: 'list_4',
+        title: 'MacBook Air M1 (8GB Unified / 256GB SSD, Space Gray)',
+        description: 'Personal device used gently for coding. Battery health at 88% (Cycle count: 210). Comes with original 30W USB-C brick, braided cable, and box. In-person testing welcomed.',
+        priceMMK: 1450000,
+        type: 'HARDWARE',
+        category: 'Laptops & Ultrabooks',
+        subCategory: 'Apple Silicon',
+        previewUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80',
+        isFeatured: true,
+        plan: 'PREMIUM',
+        condition: 'EXCELLENT_90_PLUS',
+        batteryHealth: 88,
+        meetupLocation: 'Hledan Center or MICT Park, Yangon',
+        sellerId: 'usr_1',
+        createdAt: '1 day ago',
+        contactTelegram: 'aung_dev',
+        contactViber: '+959976543210',
+        contactPhone: '09976543210'
+      },
+      {
+        id: 'list_5',
+        title: 'Redmi K-series 5G Flagship (Used 6 Months, Mint)',
+        description: 'Snapdragon chipset, 120Hz AMOLED display, 67W charging brick included. Tempered glass applied from day 1 with zero scratches. Testing available around Sanchaung.',
+        priceMMK: 650000,
+        type: 'HARDWARE',
+        category: 'Smartphones & Tablets',
+        subCategory: 'Android Devices',
+        previewUrl: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=800&q=80',
+        isFeatured: false,
+        plan: 'FREEMIUM',
+        condition: 'LIKE_NEW',
+        batteryHealth: 94,
+        meetupLocation: 'Dagon Centre 2 / Sanchaung, Yangon',
+        sellerId: 'usr_3',
+        createdAt: '2 days ago',
+        contactTelegram: 'minkhant_cs',
+        contactViber: '+959450011223',
+        contactPhone: '09450011223'
+      },
+      {
+        id: 'list_6',
+        title: 'Anker 65W GaN Fast Charger + 100W Braided Type-C Cable',
+        description: 'Dual USB-C and single USB-A compact wall charger. Supports PD 3.0 PPS fast charging for MacBooks, iPads, and Android phones. Purchased 2 months ago.',
+        priceMMK: 65000,
+        type: 'HARDWARE',
+        category: 'Chargers, Cables & Power Adapters',
+        subCategory: 'GaN Fast Chargers',
+        previewUrl: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80',
+        isFeatured: false,
+        plan: 'FREEMIUM',
+        condition: 'LIKE_NEW',
+        meetupLocation: 'MICT Park Main Entrance, Yangon',
+        sellerId: 'usr_3',
+        createdAt: '3 days ago',
+        contactTelegram: 'minkhant_cs',
+        contactViber: '+959450011223',
+        contactPhone: '09450011223'
+      },
+      {
+        id: 'list_7',
+        title: 'Keychron K2 Wireless Mechanical Keyboard (Gateron Brown)',
+        description: 'Mac & Windows dual layout with bluetooth and wired modes. White LED backlight. Comes with extra keycaps, keycap puller, and USB-C cable.',
+        priceMMK: 130000,
+        type: 'HARDWARE',
+        category: 'Peripherals & Accessories',
+        subCategory: 'Mechanical Keyboards',
+        previewUrl: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80',
+        isFeatured: false,
+        plan: 'FREEMIUM',
+        condition: 'EXCELLENT_90_PLUS',
+        meetupLocation: 'Junction Square or Time City, Yangon',
+        sellerId: 'usr_1',
+        createdAt: '4 days ago',
+        contactTelegram: 'aung_dev',
+        contactViber: '+959976543210',
+        contactPhone: '09976543210'
+      }
+    ];
 
-    window.AppState = {
+    /* Safe Storage Retrieval (Error-Free) */
+    function safeGetJSON(key, fallback) {
+      try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : fallback;
+      } catch (e) {
+        console.error('Storage parse error for', key, e);
+        return fallback;
+      }
+    }
+
+    const AppState = {
       theme: localStorage.getItem('techswap_theme') || 'dark',
-      users: savedUsers ? JSON.parse(savedUsers) : INITIAL_USERS,
-      listings: [],
-      currentUser: null,
+      users: safeGetJSON('techswap_users', INITIAL_USERS),
+      listings: safeGetJSON('techswap_listings', INITIAL_LISTINGS),
+      currentUser: null, // စတင်ချိန်တွင် ဘာ acc မှ မဝင်ထားစေပါ (Guest)
+      pendingCreateListing: false,
       activeDivision: 'ALL',
       selectedCategory: 'ALL',
       searchQuery: '',
@@ -114,55 +937,55 @@ model Listing {
       isUserDropdownOpen: false
     };
 
-    // စစဝင်ချင်း မည်သည့် Account မှ Default မဝင်ထားစေရန် သတ်မှတ်ခြင်း
-    if (savedCurrentUserId) {
-      window.AppState.currentUser = window.AppState.users.find(u => u.id === savedCurrentUserId) || null;
-    } else {
-      window.AppState.currentUser = null;
-    }
-
-    const q = query(listingsCol, orderBy("createdAt", "desc"));
-    onSnapshot(q, (snapshot) => {
-      window.AppState.listings = snapshot.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
-      window.renderListings();
-      window.renderCategoryPills();
-    }, (error) => {
-      console.error("Firebase Realtime Error:", error);
-    });
-
-    function saveUserState() {
-      localStorage.setItem('techswap_users', JSON.stringify(window.AppState.users));
-      if (window.AppState.currentUser) {
-        localStorage.setItem('techswap_current_user_id', window.AppState.currentUser.id);
-      } else {
-        localStorage.removeItem('techswap_current_user_id');
+    function safeLucide() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
       }
     }
 
-    window.applyTheme = function() {
+    function saveUserState() {
+      try {
+        localStorage.setItem('techswap_users', JSON.stringify(AppState.users));
+        if (AppState.currentUser) {
+          localStorage.setItem('techswap_current_user_id', AppState.currentUser.id);
+        } else {
+          localStorage.removeItem('techswap_current_user_id');
+        }
+      } catch (e) {
+        console.warn('Storage save failed:', e);
+      }
+    }
+
+    function saveListingsState() {
+      try {
+        localStorage.setItem('techswap_listings', JSON.stringify(AppState.listings));
+      } catch (e) {
+        console.warn('Storage save failed:', e);
+      }
+    }
+
+    function applyTheme() {
       const html = document.documentElement;
       const themeIcon = document.getElementById('theme-icon');
-      if (window.AppState.theme === 'dark') {
+      if (AppState.theme === 'dark') {
         html.classList.add('dark');
         if (themeIcon) themeIcon.setAttribute('data-lucide', 'sun');
       } else {
         html.classList.remove('dark');
         if (themeIcon) themeIcon.setAttribute('data-lucide', 'moon');
       }
-      lucide.createIcons();
-    };
+      safeLucide();
+    }
 
-    window.toggleTheme = function() {
-      window.AppState.theme = window.AppState.theme === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('techswap_theme', window.AppState.theme);
-      window.applyTheme();
-    };
+    function toggleTheme() {
+      AppState.theme = AppState.theme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('techswap_theme', AppState.theme);
+      applyTheme();
+    }
 
-    window.showToast = function(message) {
+    function showToast(message) {
       const container = document.getElementById('toast-container');
+      if (!container) return;
       const toast = document.createElement('div');
       toast.className = 'pointer-events-auto flex items-center gap-3 bg-brand-600 text-white px-5 py-3 rounded-xl shadow-2xl border border-brand-400/40 transition-all duration-300';
       toast.innerHTML = `
@@ -170,79 +993,90 @@ model Listing {
         <span class="text-sm font-medium">${message}</span>
       `;
       container.appendChild(toast);
-      lucide.createIcons();
+      safeLucide();
 
       setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateY(-10px)';
-        setTimeout(() => toast.remove(), 3500);
+        setTimeout(() => toast.remove(), 300);
       }, 3500);
-    };
+    }
 
-    window.renderUserNav = function() {
+    function renderUserNav() {
       const slot = document.getElementById('user-profile-button-slot');
       const activeUserBadge = document.getElementById('active-user-badge');
       const userSwitchList = document.getElementById('user-switch-list');
+      const menu = document.getElementById('user-dropdown-menu');
 
-      if (!window.AppState.currentUser) {
+      if (!slot) return;
+
+      // စစဝင်ချင်း မည်သည့် Account မှ မဝင်ထားသည့် အခြေအနေ (Guest Mode)
+      if (!AppState.currentUser) {
         slot.innerHTML = `
           <button onclick="openAuthModal('SIGN_IN')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-brand-600 dark:text-brand-400 border-slate-200 dark:border-slate-700 shadow-sm transition">
             <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
             <span>Sign In</span>
           </button>
         `;
-        document.getElementById('user-dropdown-menu').classList.add('hidden');
-        lucide.createIcons();
+        if (menu) menu.classList.add('hidden');
+        safeLucide();
         return;
       }
 
-      const firstName = window.AppState.currentUser.name.split(' ')[0];
-      const isPro = window.AppState.currentUser.tier === 'PRO';
+      // Account ဝင်ထားပြီးပါက ပြသပေးမည့် Profile UI
+      const userListingsCount = AppState.listings.filter(item => item.sellerId === AppState.currentUser.id).length;
+      const firstName = (AppState.currentUser.name || 'User').split(' ')[0];
+      const isPro = AppState.currentUser.tier === 'PRO';
 
       slot.innerHTML = `
         <button onclick="toggleUserDropdown(event)" class="flex items-center gap-2 border px-2.5 py-1.5 rounded-xl text-xs transition bg-white dark:bg-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700/80 shadow-sm">
-          <img src="${window.AppState.currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${window.AppState.currentUser.name}" class="w-5 h-5 rounded-full object-cover ring-1 ring-brand-500">
+          <img src="${AppState.currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${AppState.currentUser.name}" class="w-5 h-5 rounded-full object-cover ring-1 ring-brand-500">
           <div class="text-left hidden sm:block">
             <div class="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
               ${firstName}
               ${isPro ? '<i data-lucide="shield-check" class="w-3.5 h-3.5 text-brand-500"></i>' : ''}
             </div>
             <div class="text-[10px] text-slate-500 dark:text-slate-400">
-              ${isPro ? 'Verified Pro' : 'Community Member'}
+              ${isPro ? 'Verified Pro' : `Active Listings: ${userListingsCount}`}
             </div>
           </div>
         </button>
       `;
 
-      activeUserBadge.innerHTML = `
-        <div class="font-semibold text-xs text-brand-500">${window.AppState.currentUser.name}</div>
-        <div class="text-[11px] text-slate-600 dark:text-slate-300">${window.AppState.currentUser.email}</div>
-        <div class="text-[10px] text-slate-400 mt-0.5">Telegram: @${window.AppState.currentUser.telegramHandle || 'member'}</div>
-      `;
+      if (activeUserBadge) {
+        activeUserBadge.innerHTML = `
+          <div class="font-semibold text-xs text-brand-500">${AppState.currentUser.name}</div>
+          <div class="text-[11px] text-slate-600 dark:text-slate-300">${AppState.currentUser.email}</div>
+          <div class="text-[10px] text-slate-400 mt-0.5">Telegram: @${AppState.currentUser.telegramHandle || 'member'}</div>
+        `;
+      }
 
-      userSwitchList.innerHTML = window.AppState.users.map(usr => `
-        <button onclick="switchCurrentUser('${usr.id}')" class="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs transition ${
-          window.AppState.currentUser.id === usr.id 
-            ? 'bg-brand-50 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-500/30 font-semibold'
-            : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
-        }">
-          <div class="flex items-center gap-2">
-            <img src="${usr.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${usr.name}" class="w-5 h-5 rounded-full object-cover">
-            <span class="truncate max-w-[120px]">${usr.name}</span>
-          </div>
-          <span class="text-[9px] px-1.5 py-0.5 rounded font-mono ${
-            usr.tier === 'PRO' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-500/20 text-slate-400'
-          }">${usr.tier}</span>
-        </button>
-      `).join('');
+      if (userSwitchList) {
+        userSwitchList.innerHTML = AppState.users.map(usr => `
+          <button onclick="switchCurrentUser('${usr.id}')" class="w-full flex items-center justify-between p-2 rounded-xl text-left text-xs transition ${
+            AppState.currentUser && AppState.currentUser.id === usr.id 
+              ? 'bg-brand-50 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 border border-brand-200 dark:border-brand-500/30 font-semibold'
+              : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+          }">
+            <div class="flex items-center gap-2">
+              <img src="${usr.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${usr.name}" class="w-5 h-5 rounded-full object-cover">
+              <span class="truncate max-w-[120px]">${usr.name}</span>
+            </div>
+            <span class="text-[9px] px-1.5 py-0.5 rounded font-mono ${
+              usr.tier === 'PRO' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-500/20 text-slate-400'
+            }">${usr.tier}</span>
+          </button>
+        `).join('');
+      }
 
-      lucide.createIcons();
-    };
+      safeLucide();
+    }
 
-    window.toggleUserDropdown = function(e) {
+    function toggleUserDropdown(e) {
       e.stopPropagation();
-      document.getElementById('user-dropdown-menu').classList.toggle('hidden');
-    };
+      const menu = document.getElementById('user-dropdown-menu');
+      if (menu) menu.classList.toggle('hidden');
+    }
 
     document.addEventListener('click', (e) => {
       const wrapper = document.getElementById('user-menu-wrapper');
@@ -252,52 +1086,59 @@ model Listing {
       }
     });
 
-    window.switchCurrentUser = function(id) {
-      const found = window.AppState.users.find(u => u.id === id);
+    function switchCurrentUser(id) {
+      const found = AppState.users.find(u => u.id === id);
       if (found) {
-        window.AppState.currentUser = found;
+        AppState.currentUser = found;
         saveUserState();
-        document.getElementById('user-dropdown-menu').classList.add('hidden');
-        window.renderUserNav();
-        window.renderListings();
-        window.showToast(`Switched active profile to ${found.name}`);
+        const menu = document.getElementById('user-dropdown-menu');
+        if (menu) menu.classList.add('hidden');
+        renderUserNav();
+        renderListings();
+        showToast(`Switched active profile to ${found.name}`);
       }
-    };
+    }
 
-    window.signOutUser = function() {
-      window.AppState.currentUser = null;
+    function signOutUser() {
+      AppState.currentUser = null;
       saveUserState();
-      document.getElementById('user-dropdown-menu').classList.add('hidden');
-      window.renderUserNav();
-      window.renderListings();
-      window.showToast('Signed out of Tech Swap');
-    };
+      const menu = document.getElementById('user-dropdown-menu');
+      if (menu) menu.classList.add('hidden');
+      renderUserNav();
+      renderListings();
+      showToast('Signed out of Tech Swap');
+    }
 
-    window.setDivision = function(division) {
-      window.AppState.activeDivision = division;
-      window.AppState.selectedCategory = 'ALL';
+    function setDivision(division) {
+      AppState.activeDivision = division;
+      AppState.selectedCategory = 'ALL';
 
       const btnAll = document.getElementById('nav-btn-all');
       const btnSoft = document.getElementById('nav-btn-software');
       const btnHard = document.getElementById('nav-btn-hardware');
       const inactiveClasses = 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
       
-      btnAll.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
-        (division === 'ALL' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm font-semibold' : inactiveClasses);
-      
-      btnSoft.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
-        (division === 'SOFTWARE' ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30 font-semibold' : inactiveClasses);
+      if (btnAll) {
+        btnAll.className = 'px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
+          (division === 'ALL' ? 'bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm font-semibold' : inactiveClasses);
+      }
+      if (btnSoft) {
+        btnSoft.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
+          (division === 'SOFTWARE' ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30 font-semibold' : inactiveClasses);
+      }
+      if (btnHard) {
+        btnHard.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
+          (division === 'HARDWARE' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold' : inactiveClasses);
+      }
 
-      btnHard.className = 'flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ' + 
-        (division === 'HARDWARE' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold' : inactiveClasses);
+      renderCategoryPills();
+      renderListings();
+    }
 
-      window.renderCategoryPills();
-      window.renderListings();
-    };
-
-    window.renderCategoryPills = function() {
+    function renderCategoryPills() {
       const container = document.getElementById('category-pills-container');
-      const { activeDivision, selectedCategory, listings } = window.AppState;
+      if (!container) return;
+      const { activeDivision, selectedCategory, listings } = AppState;
 
       let pillsHTML = `
         <button onclick="setCategory('ALL')" class="text-xs px-3 py-1.5 rounded-xl border transition ${
@@ -342,97 +1183,111 @@ model Listing {
       }
 
       container.innerHTML = pillsHTML;
-      lucide.createIcons();
-    };
+      safeLucide();
+    }
 
-    window.setCategory = function(cat) {
-      window.AppState.selectedCategory = cat;
-      window.renderCategoryPills();
-      window.renderListings();
-    };
+    function setCategory(cat) {
+      AppState.selectedCategory = cat;
+      renderCategoryPills();
+      renderListings();
+    }
 
-    window.handleSearchChange = function(val) {
-      window.AppState.searchQuery = val;
+    function handleSearchChange(val) {
+      AppState.searchQuery = val;
       const clearBtn = document.getElementById('clear-search-btn');
-      if (val.trim()) {
-        clearBtn.classList.remove('hidden');
-      } else {
-        clearBtn.classList.add('hidden');
+      if (clearBtn) {
+        if (val.trim()) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
       }
-      window.renderListings();
-    };
+      renderListings();
+    }
 
-    window.clearSearch = function() {
+    function clearSearch() {
       const input = document.getElementById('search-input');
-      input.value = '';
-      window.AppState.searchQuery = '';
-      document.getElementById('clear-search-btn').classList.add('hidden');
-      window.renderListings();
-    };
+      if (input) input.value = '';
+      AppState.searchQuery = '';
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (clearBtn) clearBtn.classList.add('hidden');
+      renderListings();
+    }
 
-    window.handleSortChange = function(val) {
-      window.AppState.priceSort = val;
-      window.renderListings();
-    };
+    function handleSortChange(val) {
+      AppState.priceSort = val;
+      renderListings();
+    }
 
-    window.toggleFeaturedOnly = function() {
-      window.AppState.onlyFeatured = !window.AppState.onlyFeatured;
+    function toggleFeaturedOnly() {
+      AppState.onlyFeatured = !AppState.onlyFeatured;
       const btn = document.getElementById('featured-toggle-btn');
-      if (window.AppState.onlyFeatured) {
-        btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border transition bg-amber-500/20 text-amber-500 border-amber-500/40';
-      } else {
-        btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
+      if (btn) {
+        if (AppState.onlyFeatured) {
+          btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border transition bg-amber-500/20 text-amber-500 border-amber-500/40';
+        } else {
+          btn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
+        }
       }
-      window.renderListings();
-    };
+      renderListings();
+    }
 
-    window.resetAllFilters = function() {
-      window.AppState.activeDivision = 'ALL';
-      window.AppState.selectedCategory = 'ALL';
-      window.AppState.searchQuery = '';
-      window.AppState.priceSort = 'DEFAULT';
-      window.AppState.onlyFeatured = false;
+    function resetAllFilters() {
+      AppState.activeDivision = 'ALL';
+      AppState.selectedCategory = 'ALL';
+      AppState.searchQuery = '';
+      AppState.priceSort = 'DEFAULT';
+      AppState.onlyFeatured = false;
 
-      document.getElementById('search-input').value = '';
-      document.getElementById('clear-search-btn').classList.add('hidden');
-      document.getElementById('sort-select').value = 'DEFAULT';
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) searchInput.value = '';
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (clearBtn) clearBtn.classList.add('hidden');
+      const sortSelect = document.getElementById('sort-select');
+      if (sortSelect) sortSelect.value = 'DEFAULT';
 
       const featBtn = document.getElementById('featured-toggle-btn');
-      featBtn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
+      if (featBtn) {
+        featBtn.className = 'flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-medium border transition bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:text-slate-900 dark:hover:text-slate-200';
+      }
 
-      window.setDivision('ALL');
-    };
+      setDivision('ALL');
+    }
 
-    window.renderListings = function() {
+    function renderListings() {
       const grid = document.getElementById('listings-grid');
       const emptyState = document.getElementById('empty-state');
       const resetBtn = document.getElementById('reset-filters-btn');
       const catalogTitle = document.getElementById('catalog-title');
       const catalogSubtitle = document.getElementById('catalog-subtitle');
 
-      if (window.AppState.activeDivision === 'ALL') {
-        catalogTitle.textContent = 'All Marketplace Listings';
-      } else if (window.AppState.activeDivision === 'SOFTWARE') {
-        catalogTitle.textContent = 'Part 1: Software & Digital Assets';
-      } else {
-        catalogTitle.textContent = 'Part 2: Hardware & Pre-Owned Gear';
+      if (!grid) return;
+
+      if (catalogTitle) {
+        if (AppState.activeDivision === 'ALL') {
+          catalogTitle.textContent = 'All Marketplace Listings';
+        } else if (AppState.activeDivision === 'SOFTWARE') {
+          catalogTitle.textContent = 'Part 1: Software & Digital Assets';
+        } else {
+          catalogTitle.textContent = 'Part 2: Hardware & Pre-Owned Gear';
+        }
       }
 
-      const isFiltered = window.AppState.activeDivision !== 'ALL' || window.AppState.selectedCategory !== 'ALL' || window.AppState.searchQuery || window.AppState.onlyFeatured;
-      if (isFiltered) resetBtn.classList.remove('hidden');
-      else resetBtn.classList.add('hidden');
+      const isFiltered = AppState.activeDivision !== 'ALL' || AppState.selectedCategory !== 'ALL' || AppState.searchQuery || AppState.onlyFeatured;
+      if (resetBtn) {
+        if (isFiltered) resetBtn.classList.remove('hidden');
+        else resetBtn.classList.add('hidden');
+      }
 
-      const filtered = window.AppState.listings.filter(item => {
-        if (window.AppState.activeDivision !== 'ALL' && item.type !== window.AppState.activeDivision) return false;
-        if (window.AppState.selectedCategory !== 'ALL' && !window.AppState.selectedCategory.startsWith('All')) {
-          if (item.category !== window.AppState.selectedCategory) return false;
+      const filtered = (AppState.listings || []).filter(item => {
+        if (!item) return false;
+        if (AppState.activeDivision !== 'ALL' && item.type !== AppState.activeDivision) return false;
+        if (AppState.selectedCategory !== 'ALL' && !AppState.selectedCategory.startsWith('All')) {
+          if (item.category !== AppState.selectedCategory) return false;
         }
-        if (window.AppState.onlyFeatured && !item.isFeatured) return false;
-        if (window.AppState.searchQuery.trim() !== '') {
-          const q = window.AppState.searchQuery.toLowerCase();
-          const matchTitle = item.title?.toLowerCase().includes(q);
-          const matchDesc = item.description?.toLowerCase().includes(q);
-          const matchCat = item.category?.toLowerCase().includes(q);
+        if (AppState.onlyFeatured && !item.isFeatured) return false;
+        if (AppState.searchQuery.trim() !== '') {
+          const q = AppState.searchQuery.toLowerCase();
+          const matchTitle = (item.title || '').toLowerCase().includes(q);
+          const matchDesc = (item.description || '').toLowerCase().includes(q);
+          const matchCat = (item.category || '').toLowerCase().includes(q);
           const matchLoc = item.meetupLocation ? item.meetupLocation.toLowerCase().includes(q) : false;
           if (!matchTitle && !matchDesc && !matchCat && !matchLoc) return false;
         }
@@ -441,24 +1296,31 @@ model Listing {
 
       filtered.sort((a, b) => {
         if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
-        if (window.AppState.priceSort === 'LOW_TO_HIGH') return a.priceMMK - b.priceMMK;
-        if (window.AppState.priceSort === 'HIGH_TO_LOW') return b.priceMMK - a.priceMMK;
+        if (AppState.priceSort === 'LOW_TO_HIGH') return (a.priceMMK || 0) - (b.priceMMK || 0);
+        if (AppState.priceSort === 'HIGH_TO_LOW') return (b.priceMMK || 0) - (a.priceMMK || 0);
         return 0;
       });
 
-      catalogSubtitle.textContent = `Showing ${filtered.length} direct peer items`;
+      if (catalogSubtitle) {
+        catalogSubtitle.textContent = `Showing ${filtered.length} direct peer items`;
+      }
 
       if (filtered.length === 0) {
         grid.innerHTML = '';
-        emptyState.classList.remove('hidden');
+        if (emptyState) emptyState.classList.remove('hidden');
         return;
       }
 
-      emptyState.classList.add('hidden');
+      if (emptyState) emptyState.classList.add('hidden');
 
       grid.innerHTML = filtered.map(item => {
+        const seller = (AppState.users || []).find(u => u.id === item.sellerId) || {
+          name: 'Community Seller',
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+          isVerified: false
+        };
         const isSoftware = item.type === 'SOFTWARE';
-        const usdEst = (item.priceMMK / 3500).toFixed(1);
+        const usdEst = ((item.priceMMK || 0) / 3500).toFixed(1);
 
         let badgeExtra = '';
         if (!isSoftware && item.condition) {
@@ -476,7 +1338,7 @@ model Listing {
         return `
           <div onclick="openProductModal('${item.id}')" class="group relative flex flex-col border rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${borderFeaturedClass}">
             <div class="relative h-44 w-full bg-slate-950 overflow-hidden">
-              <img src="${item.previewUrl}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+              <img src="${item.previewUrl || ''}" alt="${item.title || ''}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80"></div>
               
               ${item.isFeatured ? `
@@ -508,17 +1370,17 @@ model Listing {
             <div class="p-4 flex-1 flex flex-col justify-between">
               <div>
                 <div class="flex items-center justify-between text-[11px] mb-1.5 text-slate-500 dark:text-slate-400">
-                  <span class="truncate max-w-[170px]">${item.category}</span>
-                  <span>Direct Cloud</span>
+                  <span class="truncate max-w-[170px]">${item.category || ''}</span>
+                  <span>${item.createdAt || ''}</span>
                 </div>
 
                 <h3 class="font-semibold text-sm transition-colors line-clamp-2 leading-snug text-slate-900 dark:text-slate-100 group-hover:text-brand-500">
-                  ${item.title}
+                  ${item.title || ''}
                 </h3>
 
                 <div class="mt-2.5 flex items-baseline gap-2">
                   <span class="text-base font-extrabold text-slate-900 dark:text-white">
-                    ${Number(item.priceMMK).toLocaleString()} MMK
+                    ${(item.priceMMK || 0).toLocaleString()} MMK
                   </span>
                   <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">
                     ≈ $${usdEst}
@@ -528,10 +1390,11 @@ model Listing {
 
               <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
                 <div class="flex items-center gap-1.5">
-                  <img src="${item.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="seller" class="w-5 h-5 rounded-full object-cover">
+                  <img src="${seller.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${seller.name}" class="w-5 h-5 rounded-full object-cover">
                   <span class="font-medium text-[11px] truncate max-w-[100px] text-slate-700 dark:text-slate-300">
-                    ${item.sellerName || 'Verified Seller'}
+                    ${seller.name}
                   </span>
+                  ${seller.isVerified ? '<i data-lucide="shield-check" class="w-3.5 h-3.5 text-brand-500 flex-shrink-0"></i>' : ''}
                 </div>
 
                 <div class="flex items-center gap-1 text-[11px] truncate max-w-[120px] text-slate-500 dark:text-slate-400">
@@ -550,14 +1413,21 @@ model Listing {
         `;
       }).join('');
 
-      lucide.createIcons();
-    };
+      safeLucide();
+    }
 
-    window.openProductModal = function(id) {
-      const item = window.AppState.listings.find(x => x.id === id);
+    function openProductModal(id) {
+      const item = AppState.listings.find(x => x.id === id);
       if (!item) return;
-      window.AppState.activeProduct = item;
+      AppState.activeProduct = item;
 
+      const seller = AppState.users.find(u => u.id === item.sellerId) || {
+        name: 'Community Seller',
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+        telegramHandle: 'techswap',
+        phoneNumber: '09900000000',
+        isVerified: false
+      };
       const isSoftware = item.type === 'SOFTWARE';
 
       const typeBadge = document.getElementById('modal-type-badge');
@@ -566,7 +1436,7 @@ model Listing {
         isSoftware ? 'bg-brand-500/20 text-brand-500 dark:text-brand-400 border border-brand-500/30' : 'bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 border border-indigo-500/30'
       }`;
 
-      document.getElementById('modal-item-id').textContent = `ID: ${item.id.slice(0, 8)}`;
+      document.getElementById('modal-item-id').textContent = `ID: ${item.id}`;
       document.getElementById('modal-img').src = item.previewUrl;
 
       const featBadge = document.getElementById('modal-featured-badge');
@@ -575,7 +1445,7 @@ model Listing {
 
       document.getElementById('modal-category').textContent = `${item.category} · ${item.subCategory || 'General'}`;
       document.getElementById('modal-title').textContent = item.title;
-      document.getElementById('modal-price').textContent = `${Number(item.priceMMK).toLocaleString()} MMK`;
+      document.getElementById('modal-price').textContent = `${(item.priceMMK || 0).toLocaleString()} MMK`;
       document.getElementById('modal-desc').textContent = item.description;
 
       const specsDiv = document.getElementById('modal-specs');
@@ -607,12 +1477,15 @@ model Listing {
         `;
       }
 
-      document.getElementById('modal-seller-avatar').src = item.sellerAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-      document.getElementById('modal-seller-name').textContent = item.sellerName || 'Community Seller';
+      document.getElementById('modal-seller-avatar').src = seller.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+      document.getElementById('modal-seller-name').textContent = seller.name;
+      const verBadge = document.getElementById('modal-seller-verified');
+      if (seller.isVerified) verBadge.classList.remove('hidden');
+      else verBadge.classList.add('hidden');
 
-      // ပိုင်ရှင်ဖြစ်မှသာ ဖျက်ခွင့်ပေးမည့် စစ်ဆေးမှု
+      // Contact or Owner Controls
       const actionSlot = document.getElementById('modal-action-buttons-slot');
-      const isOwner = window.AppState.currentUser && (item.sellerEmail?.toLowerCase() === window.AppState.currentUser.email?.toLowerCase());
+      const isOwner = AppState.currentUser && (item.sellerId === AppState.currentUser.id || (AppState.currentUser.email && seller.email === AppState.currentUser.email));
 
       if (isOwner) {
         actionSlot.innerHTML = `
@@ -621,14 +1494,14 @@ model Listing {
               ⭐ သင့်ကိုယ်ပိုင် ပစ္စည်းဖြစ်သည် (ရောင်းထွက်ပြီးပါက ဖျက်နိုင်ပါသည်)
             </div>
             <button onclick="deleteListing('${item.id}')" class="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-500 font-bold text-xs transition">
-              <i data-lucide="trash-2" class="w-4 h-4"></i>
+              <i data-lucide="trash-2" class="w-4 h-4 text-rose-500"></i>
               <span>Mark as Sold / Delete Listing</span>
             </button>
           </div>
         `;
       } else {
-        const rawTg = (item.contactTelegram || 'techswap').replace('@', '');
-        const rawPhone = item.contactPhone || '09976543210';
+        const rawTg = (item.contactTelegram || seller.telegramHandle || 'techswap').replace('@', '');
+        const rawPhone = item.contactPhone || seller.phoneNumber || '09976543210';
 
         actionSlot.innerHTML = `
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -647,32 +1520,39 @@ model Listing {
       const modal = document.getElementById('product-detail-modal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
-      lucide.createIcons();
-    };
+      safeLucide();
+    }
 
-    window.closeProductModal = function() {
+    function closeProductModal() {
       const modal = document.getElementById('product-detail-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      window.AppState.activeProduct = null;
-    };
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      AppState.activeProduct = null;
+    }
 
-    window.deleteListing = async function(id) {
-      const confirmDelete = confirm("ပစ္စည်း ရောင်းထွက်သွားပြီ ဖြစ်၍ Cloud စာရင်းထဲမှ အပြီးတိုင် ဖျက်ချင်တာ သေချာပါသလား?");
+    /* Delete / Mark as Sold Function */
+    function deleteListing(id) {
+      const item = AppState.listings.find(x => x.id === id);
+      if (!item) return;
+
+      const confirmDelete = confirm(`"${item.title}" ပစ္စည်း ရောင်းထွက်သွားပြီ ဖြစ်၍ စာရင်းထဲမှ အပြီးတိုင် ဖျက်ချင်တာ သေချာပါသလား?`);
       if (!confirmDelete) return;
 
-      try {
-        await deleteDoc(doc(db, "listings", id));
-        window.closeProductModal();
-        window.showToast('ပစ္စည်းစာရင်းမှ အောင်မြင်စွာ ဖျက်ပြီးပါပြီ (Sold & Removed)!');
-      } catch (err) {
-        alert("ဖျက်ရာတွင် အမှားဖြစ်ပေါ်ပါသည်: " + err.message);
-      }
-    };
+      AppState.listings = AppState.listings.filter(x => x.id !== id);
+      saveListingsState();
 
-    window.copyProductInquiry = function() {
-      if (!window.AppState.activeProduct) return;
-      const text = `Hi! I found your listing "${window.AppState.activeProduct.title}" (${Number(window.AppState.activeProduct.priceMMK).toLocaleString()} MMK) on Tech Swap. Is it still available?`;
+      closeProductModal();
+      renderUserNav();
+      renderCategoryPills();
+      renderListings();
+      showToast('ပစ္စည်းစာရင်းမှ အောင်မြင်စွာ ဖျက်ပြီးပါပြီ (Sold & Removed)!');
+    }
+
+    function copyProductInquiry() {
+      if (!AppState.activeProduct) return;
+      const text = `Hi! I found your listing "${AppState.activeProduct.title}" (${(AppState.activeProduct.priceMMK || 0).toLocaleString()} MMK) on Tech Swap. Is it still available?`;
       
       const textArea = document.createElement("textarea");
       textArea.value = text;
@@ -680,96 +1560,127 @@ model Listing {
       textArea.select();
       try {
         document.execCommand('copy');
-        window.showToast('Copied inquiry message to clipboard!');
+        showToast('Copied inquiry message to clipboard!');
       } catch (err) {
-        window.showToast('Unable to copy text.');
+        showToast('Unable to copy text.');
       }
       document.body.removeChild(textArea);
-    };
+    }
 
-    // 🟢 အကောင့်မဝင်ထားပါက Sign Up ကို အရင်တောင်းဆိုမည့် နေရာ
-    window.openCreateListingModal = function() {
-      if (!window.AppState.currentUser) {
-        window.openAuthModal('SIGN_UP');
-        window.showToast("ပစ္စည်းမတင်မီ အမည်နှင့် Email ဖြင့် အကောင့်အရင်ဖွင့်ပေးပါခင်ဗျာ။");
+    /* Post Listing Trigger Logic */
+    function openCreateListingModal() {
+      if (!AppState.currentUser) {
+        AppState.pendingCreateListing = true;
+        showToast('ပစ္စည်းတင်ရန်အတွက် Email ဖြင့် အရင် Sign In / Sign Up လုပ်ပေးပါ');
+        openAuthModal('SIGN_IN');
         return;
       }
 
-      document.getElementById('post-seller-name').value = window.AppState.currentUser.name;
-      document.getElementById('post-seller-email').value = window.AppState.currentUser.email;
-      document.getElementById('post-seller-phone').value = window.AppState.currentUser.phoneNumber || '';
-      document.getElementById('post-seller-telegram').value = window.AppState.currentUser.telegramHandle || '';
+      const nameInput = document.getElementById('post-seller-name');
+      const emailInput = document.getElementById('post-seller-email');
+      const phoneInput = document.getElementById('post-seller-phone');
+      const tgInput = document.getElementById('post-seller-telegram');
+
+      if (nameInput) nameInput.value = AppState.currentUser.name || '';
+      if (emailInput) emailInput.value = AppState.currentUser.email || '';
+      if (phoneInput) phoneInput.value = AppState.currentUser.phoneNumber || '';
+      if (tgInput) tgInput.value = AppState.currentUser.telegramHandle || '';
 
       populatePostCategorySelect();
       const modal = document.getElementById('create-listing-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      lucide.createIcons();
-    };
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+      safeLucide();
+    }
 
-    window.closeCreateListingModal = function() {
+    function closeCreateListingModal() {
       const modal = document.getElementById('create-listing-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    };
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
 
-    window.selectListingPlan = function(plan) {
-      window.AppState.selectedPlan = plan;
+    function selectListingPlan(plan) {
+      AppState.selectedPlan = plan;
       const cardFree = document.getElementById('plan-card-freemium');
       const cardPrem = document.getElementById('plan-card-premium');
-      if (plan === 'FREEMIUM') {
-        cardFree.className = 'cursor-pointer p-3.5 rounded-xl border-2 border-brand-500 bg-brand-500/10 transition shadow-sm';
-        cardPrem.className = 'cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition';
-      } else {
-        cardPrem.className = 'cursor-pointer p-3.5 rounded-xl border-2 border-amber-500 bg-amber-500/10 transition shadow-sm';
-        cardFree.className = 'cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition';
+      if (cardFree && cardPrem) {
+        if (plan === 'FREEMIUM') {
+          cardFree.className = 'cursor-pointer p-3.5 rounded-xl border-2 border-brand-500 bg-brand-500/10 transition shadow-sm';
+          cardPrem.className = 'cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition';
+        } else {
+          cardPrem.className = 'cursor-pointer p-3.5 rounded-xl border-2 border-amber-500 bg-amber-500/10 transition shadow-sm';
+          cardFree.className = 'cursor-pointer p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 transition';
+        }
       }
-    };
+    }
 
-    window.setPostType = function(type) {
-      window.AppState.currentPostType = type;
+    function setPostType(type) {
+      AppState.currentPostType = type;
       const btnSoft = document.getElementById('post-tab-software');
       const btnHard = document.getElementById('post-tab-hardware');
       const softFields = document.getElementById('post-software-fields');
       const hardFields = document.getElementById('post-hardware-fields');
 
       if (type === 'SOFTWARE') {
-        btnSoft.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 shadow-sm';
-        btnHard.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
-        softFields.classList.remove('hidden');
-        hardFields.classList.add('hidden');
+        if (btnSoft) btnSoft.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 shadow-sm';
+        if (btnHard) btnHard.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+        if (softFields) softFields.classList.remove('hidden');
+        if (hardFields) hardFields.classList.add('hidden');
       } else {
-        btnHard.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-indigo-500/20 border-indigo-500 text-indigo-400 shadow-sm';
-        btnSoft.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
-        hardFields.classList.remove('hidden');
-        softFields.classList.add('hidden');
+        if (btnHard) btnHard.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-bold transition bg-indigo-500/20 border-indigo-500 text-indigo-400 shadow-sm';
+        if (btnSoft) btnSoft.className = 'flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-semibold transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+        if (hardFields) hardFields.classList.remove('hidden');
+        if (softFields) softFields.classList.add('hidden');
       }
 
       populatePostCategorySelect();
-    };
+    }
 
     function populatePostCategorySelect() {
       const select = document.getElementById('post-category');
-      const list = window.AppState.currentPostType === 'SOFTWARE' ? CATEGORIES_DATA.SOFTWARE.slice(1) : CATEGORIES_DATA.HARDWARE.slice(1);
+      if (!select) return;
+      const list = AppState.currentPostType === 'SOFTWARE' ? CATEGORIES_DATA.SOFTWARE.slice(1) : CATEGORIES_DATA.HARDWARE.slice(1);
       select.innerHTML = list.map(c => `<option value="${c}">${c}</option>`).join('');
     }
 
-    window.handleFormSubmitListing = async function(e) {
+    function handleFormSubmitListing(e) {
       e.preventDefault();
 
       const name = document.getElementById('post-seller-name').value.trim();
       const email = document.getElementById('post-seller-email').value.trim();
       const phone = document.getElementById('post-seller-phone').value.trim();
       const tg = document.getElementById('post-seller-telegram').value.replace('@', '').trim();
-      const isPremium = window.AppState.selectedPlan === 'PREMIUM';
+      const isPremium = AppState.selectedPlan === 'PREMIUM';
 
-      let user = window.AppState.currentUser;
-      if (user) {
+      let user = AppState.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (!user) {
+        user = {
+          id: `usr_${Date.now()}`,
+          name,
+          email,
+          phoneNumber: phone,
+          telegramHandle: tg || 'swap_member',
+          tier: isPremium ? 'PRO' : 'FREE',
+          isVerified: isPremium,
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+        };
+        AppState.users.unshift(user);
+      } else {
         user.name = name;
         user.phoneNumber = phone;
         user.telegramHandle = tg || user.telegramHandle;
-        saveUserState();
+        if (isPremium) {
+          user.tier = 'PRO';
+          user.isVerified = true;
+        }
       }
+
+      AppState.currentUser = user;
+      saveUserState();
 
       const title = document.getElementById('post-title').value.trim();
       const price = parseInt(document.getElementById('post-price').value, 10) || 0;
@@ -777,29 +1688,28 @@ model Listing {
       const subCategory = document.getElementById('post-subcategory').value.trim();
       const description = document.getElementById('post-desc').value.trim();
       const previewUrl = document.getElementById('post-preview-url').value.trim() || 
-        (window.AppState.currentPostType === 'SOFTWARE' 
+        (AppState.currentPostType === 'SOFTWARE' 
           ? 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80' 
           : 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80');
 
       const newListing = {
+        id: `list_${Date.now()}`,
         title,
         description,
         priceMMK: price,
-        type: window.AppState.currentPostType,
+        type: AppState.currentPostType,
         category,
-        subCategory: subCategory || (window.AppState.currentPostType === 'SOFTWARE' ? 'Digital Asset' : 'Hardware Device'),
+        subCategory: subCategory || (AppState.currentPostType === 'SOFTWARE' ? 'Digital Asset' : 'Hardware Device'),
         previewUrl,
         isFeatured: isPremium,
-        plan: window.AppState.selectedPlan,
-        sellerName: name,
-        sellerEmail: email,
-        sellerAvatar: user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+        plan: AppState.selectedPlan,
+        sellerId: user.id,
+        createdAt: 'Just now',
         contactPhone: phone,
-        contactTelegram: tg,
-        createdAt: serverTimestamp()
+        contactTelegram: tg
       };
 
-      if (window.AppState.currentPostType === 'HARDWARE') {
+      if (AppState.currentPostType === 'HARDWARE') {
         newListing.condition = document.getElementById('post-condition').value;
         const batt = document.getElementById('post-battery').value;
         if (batt) newListing.batteryHealth = parseInt(batt, 10);
@@ -809,31 +1719,35 @@ model Listing {
         newListing.fileFormat = document.getElementById('post-file-format').value;
       }
 
-      try {
-        await addDoc(listingsCol, newListing);
-        window.closeCreateListingModal();
-        document.getElementById('create-listing-form').reset();
-        window.renderUserNav();
-        window.showToast(`Listing posted to Cloud under ${name}!`);
-      } catch (err) {
-        alert("Cloud သို့ ပစ္စည်းတင်ရာတွင် အမှားဖြစ်ပေါ်ပါသည်: " + err.message);
-      }
-    };
+      AppState.listings.unshift(newListing);
+      saveListingsState();
 
-    window.openAuthModal = function(initialTab = 'SIGN_IN') {
+      closeCreateListingModal();
+      document.getElementById('create-listing-form').reset();
+      renderUserNav();
+      renderListings();
+      renderCategoryPills();
+      showToast(`Listing posted and saved under ${user.name}!`);
+    }
+
+    function openAuthModal(initialTab = 'SIGN_IN') {
       switchAuthTab(initialTab);
       renderDemoUsersList();
       const modal = document.getElementById('auth-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      lucide.createIcons();
-    };
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+      safeLucide();
+    }
 
-    window.closeAuthModal = function() {
+    function closeAuthModal() {
       const modal = document.getElementById('auth-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    };
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
 
     function switchAuthTab(tab) {
       const tabSignIn = document.getElementById('auth-tab-signin');
@@ -843,27 +1757,24 @@ model Listing {
       const title = document.getElementById('auth-modal-title');
 
       if (tab === 'SIGN_IN') {
-        tabSignIn.className = 'py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
-        tabSignUp.className = 'py-2 rounded-xl transition text-slate-400 hover:text-slate-600';
-        viewSignIn.classList.remove('hidden');
-        viewSignUp.classList.add('hidden');
-        title.textContent = 'Sign In to Tech Swap';
+        if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
+        if (tabSignUp) tabSignUp.className = 'py-2 rounded-xl transition text-slate-400 hover:text-slate-600';
+        if (viewSignIn) viewSignIn.classList.remove('hidden');
+        if (viewSignUp) viewSignUp.classList.add('hidden');
+        if (title) title.textContent = 'Sign In to Tech Swap';
       } else {
-        tabSignUp.className = 'py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
-        tabSignIn.className = 'py-2 rounded-xl transition text-slate-400 hover:text-slate-600';
-        viewSignUp.classList.remove('hidden');
-        viewSignIn.classList.add('hidden');
-        title.textContent = 'Create Free Account';
+        if (tabSignUp) tabSignUp.className = 'py-2 rounded-xl transition bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm';
+        if (tabSignIn) tabSignIn.className = 'py-2 rounded-xl transition text-slate-400 hover:text-slate-600';
+        if (viewSignUp) viewSignUp.classList.remove('hidden');
+        if (viewSignIn) viewSignIn.classList.add('hidden');
+        if (title) title.textContent = 'Create Free Account';
       }
     }
 
     function renderDemoUsersList() {
       const list = document.getElementById('demo-users-list');
-      if (window.AppState.users.length === 0) {
-        list.innerHTML = `<div class="text-[11px] text-slate-500 italic p-1">No saved accounts yet. Please sign up above.</div>`;
-        return;
-      }
-      list.innerHTML = window.AppState.users.map(u => `
+      if (!list) return;
+      list.innerHTML = (AppState.users || []).map(u => `
         <button type="button" onclick="selectDemoUser('${u.id}')" class="w-full flex items-center justify-between p-2 rounded-xl border text-left transition bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800">
           <div class="flex items-center gap-2">
             <img src="${u.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}" alt="${u.name}" class="w-6 h-6 rounded-full object-cover">
@@ -877,17 +1788,21 @@ model Listing {
       `).join('');
     }
 
-    window.selectDemoUser = function(id) {
-      window.switchCurrentUser(id);
-      window.closeAuthModal();
-    };
+    function selectDemoUser(id) {
+      switchCurrentUser(id);
+      closeAuthModal();
+      if (AppState.pendingCreateListing) {
+        AppState.pendingCreateListing = false;
+        openCreateListingModal();
+      }
+    }
 
-    window.handleEmailSignIn = function(e) {
+    function handleEmailSignIn(e) {
       e.preventDefault();
       const email = document.getElementById('auth-signin-email').value.trim();
-      let matched = window.AppState.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      let matched = AppState.users.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (matched) {
-        window.AppState.currentUser = matched;
+        AppState.currentUser = matched;
       } else {
         const username = email.split('@')[0];
         matched = {
@@ -903,30 +1818,35 @@ model Listing {
           township: 'Yangon',
           bio: 'Tech Swap Member'
         };
-        window.AppState.users.push(matched);
-        window.AppState.currentUser = matched;
+        AppState.users.push(matched);
+        AppState.currentUser = matched;
       }
       saveUserState();
-      window.closeAuthModal();
-      window.renderUserNav();
-      window.renderListings();
-      window.showToast(`Welcome, ${window.AppState.currentUser.name}!`);
-    };
+      closeAuthModal();
+      renderUserNav();
+      renderListings();
+      showToast(`Welcome, ${AppState.currentUser.name}!`);
 
-    window.setRegTier = function(tier) {
-      window.AppState.regTier = tier;
+      if (AppState.pendingCreateListing) {
+        AppState.pendingCreateListing = false;
+        openCreateListingModal();
+      }
+    }
+
+    function setRegTier(tier) {
+      AppState.regTier = tier;
       const btnFree = document.getElementById('tier-btn-free');
       const btnPro = document.getElementById('tier-btn-pro');
       if (tier === 'FREE') {
-        btnFree.className = 'py-2 px-3 rounded-xl border text-center transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 font-bold';
-        btnPro.className = 'py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+        if (btnFree) btnFree.className = 'py-2 px-3 rounded-xl border text-center transition bg-brand-500/20 border-brand-500 text-brand-600 dark:text-brand-400 font-bold';
+        if (btnPro) btnPro.className = 'py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
       } else {
-        btnPro.className = 'py-2 px-3 rounded-xl border text-center transition bg-indigo-500/20 border-indigo-500 text-indigo-500 font-bold';
-        btnFree.className = 'py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
+        if (btnPro) btnPro.className = 'py-2 px-3 rounded-xl border text-center transition bg-indigo-500/20 border-indigo-500 text-indigo-500 font-bold';
+        if (btnFree) btnFree.className = 'py-2 px-3 rounded-xl border text-center transition bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400';
       }
-    };
+    }
 
-    window.handleUserSignUp = function(e) {
+    function handleUserSignUp(e) {
       e.preventDefault();
       const name = document.getElementById('reg-name').value.trim();
       const email = document.getElementById('reg-email').value.trim();
@@ -938,8 +1858,8 @@ model Listing {
         name,
         email,
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-        tier: window.AppState.regTier,
-        isVerified: window.AppState.regTier === 'PRO',
+        tier: AppState.regTier,
+        isVerified: AppState.regTier === 'PRO',
         telegramHandle: telegram,
         viberNumber: phone,
         phoneNumber: phone,
@@ -947,72 +1867,86 @@ model Listing {
         bio: 'New Tech Swap community member'
       };
 
-      window.AppState.users.unshift(newUser);
-      window.AppState.currentUser = newUser;
+      AppState.users.unshift(newUser);
+      AppState.currentUser = newUser;
       saveUserState();
 
-      window.closeAuthModal();
+      closeAuthModal();
       document.getElementById('auth-signup-view').reset();
-      window.renderUserNav();
-      window.renderListings();
-      window.showToast(`Account registered! Welcome, ${newUser.name}!`);
+      renderUserNav();
+      renderListings();
+      showToast(`Account registered! Welcome, ${newUser.name}!`);
 
-      // အကောင့်ဖွင့်ပြီးတာနဲ့ Listing ပစ္စည်းတင်မည့် Modal ကို ဆက်လက်ဖွင့်ပေးခြင်း
-      window.openCreateListingModal();
-    };
+      if (AppState.pendingCreateListing) {
+        AppState.pendingCreateListing = false;
+        openCreateListingModal();
+      }
+    }
 
-    window.openSchemaModal = function() {
-      document.getElementById('prisma-code-block').textContent = PRISMA_SCHEMA_CODE;
-      window.setSchemaTab('PRISMA');
+    function openSchemaModal() {
+      const codeBlock = document.getElementById('prisma-code-block');
+      if (codeBlock) codeBlock.textContent = PRISMA_SCHEMA_CODE;
+      setSchemaTab('PRISMA');
       const modal = document.getElementById('schema-modal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      lucide.createIcons();
-    };
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+      safeLucide();
+    }
 
-    window.closeSchemaModal = function() {
+    function closeSchemaModal() {
       const modal = document.getElementById('schema-modal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    };
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
 
-    window.setSchemaTab = function(tab) {
+    function setSchemaTab(tab) {
       const tabPrisma = document.getElementById('schema-tab-prisma');
       const tabP2p = document.getElementById('schema-tab-p2p');
       const viewPrisma = document.getElementById('schema-view-prisma');
       const viewP2p = document.getElementById('schema-view-p2p');
 
       if (tab === 'PRISMA') {
-        tabPrisma.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white';
-        tabP2p.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition';
-        viewPrisma.classList.remove('hidden');
-        viewP2p.classList.add('hidden');
+        if (tabPrisma) tabPrisma.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white';
+        if (tabP2p) tabP2p.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition';
+        if (viewPrisma) viewPrisma.classList.remove('hidden');
+        if (viewP2p) viewP2p.classList.add('hidden');
       } else {
-        tabP2p.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white';
-        tabPrisma.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition';
-        viewP2p.classList.remove('hidden');
-        viewPrisma.classList.add('hidden');
+        if (tabP2p) tabP2p.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white';
+        if (tabPrisma) tabPrisma.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-600 transition';
+        if (viewP2p) viewP2p.classList.remove('hidden');
+        if (viewPrisma) viewPrisma.classList.add('hidden');
       }
-    };
+    }
 
-    window.copyPrismaSchema = function() {
+    function copyPrismaSchema() {
       const textArea = document.createElement("textarea");
       textArea.value = PRISMA_SCHEMA_CODE;
       document.body.appendChild(textArea);
       textArea.select();
       try {
         document.execCommand('copy');
-        window.showToast('Prisma schema copied to clipboard!');
+        showToast('Prisma schema copied to clipboard!');
       } catch (err) {
-        window.showToast('Unable to copy schema.');
+        showToast('Unable to copy schema.');
       }
       document.body.removeChild(textArea);
-    };
+    }
 
+    // App Initialization with Error Boundary
     window.addEventListener('DOMContentLoaded', () => {
-      window.applyTheme();
-      window.renderUserNav();
-      window.renderCategoryPills();
+      try {
+        applyTheme();
+        renderUserNav();
+        renderCategoryPills();
+        renderListings();
+        safeLucide();
+      } catch (err) {
+        console.error('Initialization error:', err);
+      }
     });
   </script>
 </body>
